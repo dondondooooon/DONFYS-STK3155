@@ -1,6 +1,7 @@
 # header.py
 
 # Import Library
+from pickle import TRUE
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -14,19 +15,20 @@ from sklearn.preprocessing import MinMaxScaler, StandardScaler, Normalizer
 
 # Functions for Vanilla Data Generation
 def simple_function(x):
-    return(2*x**2+6*x)
+    return 2.0+5*x*x+0.1*np.random.randn(100)
 
 '''
 ****************************************************************************************
 '''
 
 # Function for Generating Design Matrix
-def create_X(x,y,n):
+def create_X(x,y,n,simple):
     N = len(x)                  # Number of rows in design matrix // corr. to # of inputs to outputs
     l = int((n+1)*(n+2)/2)		# Number of elements in beta // Number of columns in design matrix // corr. to the weights
+    if simple == True:          # For simple function
+        l = n + 1 
     X = np.ones((N,l))          # Initialize design matrix X
 
-    # For simple function
     for i in range(1,n+1):   # Looping through columns 1 to n
         X[:,i] = x**(i) 
 
@@ -47,15 +49,9 @@ def SVD(A): # Takes as input a numpy matrix A and returns inv(A) based on singul
     return U @ D @ VT
 
 # Function for returning model function
-def ytilde(degree,x,fx):
-    print("cock")
-    X = create_X(x,0,degree)
-    X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size = 0.2, random_state=5)
-    print(X_train.shape)
-    print(X_test.shape)
-    print(Y_train.shape)
+def ytilde(X,fx):
     beta = SVD(X.T.dot(X)).dot(X.T).dot(fx)
-    return X @ beta, X_train, X_test, Y_train, Y_test # Returns ytilde
+    return beta # Returns ytilde
 
 # Function for calculating mean squared error (MSE)
 def MSE_func(y_data,y_model):
