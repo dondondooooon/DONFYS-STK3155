@@ -14,6 +14,8 @@ phi = np.arange(1,n+1)
 #print(create_X(x,0,n,True))
 print(ytilde(create_X(x,0,n,True),fx))
 
+print("x")
+
 # import inspect
 # def count_positional_args_required(func):
 #     signature = inspect.signature(func)
