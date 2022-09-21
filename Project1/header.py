@@ -56,6 +56,14 @@ def mylinreg(X,fx):
     # np.inv() ---> try out 
     return beta # Returns optimal beta 
 
+# Scaling Data 
+def scale_data(X,y):
+     scaler = StandardScaler()
+     scaler.fit(X)
+     Xscaled = scaler.transform(X)
+     yscaled = scaler.transform(y)
+     return Xscaled, yscaled
+
 # Function for calculating mean squared error (MSE)
 def MSE_func(y_data,y_model):
     n = np.size(y_model)

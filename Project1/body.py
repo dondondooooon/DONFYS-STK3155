@@ -30,7 +30,8 @@ plt.plot(x,simple_function(x))
 plt.plot(X_train, ytilde_train,'x')
 plt.plot(X_test,ytilde_test,'x')
 plt.show()
-print(MSE_func(fx,ytilde(X,fx)))
+print("MSE TRAIN:", MSE_func(y_train,ytilde_train))
+print("MSE TEST:", MSE_func(y_test,ytilde_test))
 # print(mylinreg(X,y_train))
 
 # import inspect
@@ -43,18 +44,6 @@ print(MSE_func(fx,ytilde(X,fx)))
 #             total += 1
 #     return total
 # print( count_positional_args_required(ytilde) )
-
-# # # scale
-# # scaler = StandardScaler()
-# # scaler.fit(xtrain)
-# # xtrainscaled = scaler.transform(xtrain)
-# # xtestscaled = scaler.transform(xtest)
-
-# # haha = ytilde(xtrainscaled,ytrain)
-# # print(cock.shape)
-# # xtrain, xtest, ytrain, ytest = train_test_split(x,fx,test_size=0.2)
-# # plt.plot(x,ytilde)
-# # plt.show()
 
 
 
