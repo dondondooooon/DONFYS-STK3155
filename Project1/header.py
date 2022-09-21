@@ -15,7 +15,7 @@ from sklearn.preprocessing import MinMaxScaler, StandardScaler, Normalizer
 
 # Functions for Vanilla Data Generation
 def simple_function(x):
-    return 2.0+5*x*x+0.1*np.random.randn(100)
+    return 2.0+5*x*x+0.1*x
 
 '''
 ****************************************************************************************
@@ -30,7 +30,8 @@ def create_X(x,y,n,simple):
     X = np.ones((N,l))          # Initialize design matrix X
 
     for i in range(1,n+1):   # Looping through columns 1 to n
-        X[:,i] = x**(i) 
+        X[:,i] = np.squeeze(x)**(i) 
+        # X[i,:] = x**(i) #cuz i did rescale n .reshpae(-1,1)
 
     # #"Franke"
     # for i in range(1,n+1):  # Loop through i = 1,2,3,4,5
@@ -42,16 +43,18 @@ def create_X(x,y,n,simple):
 
 # Function for performing SVD on non-invertible matrix
 def SVD(A): # Takes as input a numpy matrix A and returns inv(A) based on singular value decomposition (SVD)
-    U, S, VT = np.linalg.svd(A,full_matrices=True)
+    U, S, VT = np.linalg.svd(A)
     D = np.zeros((len(U),len(VT)))
     for i in range(0,len(VT)):
         D[i,i]=S[i]
     return U @ D @ VT
 
-# Function for returning model function
-def ytilde(X,fx):
-    beta = SVD(X.T.dot(X)).dot(X.T).dot(fx)
-    return beta # Returns ytilde
+# Function for performing OLS
+def mylinreg(X,fx):
+    # beta = SVD(X.T.dot(X)).dot(X.T).dot(fx)
+    beta = np.linalg.inv(X.T.dot(X)).dot(X.T).dot(fx)
+    # np.inv() ---> try out 
+    return beta # Returns optimal beta 
 
 # Function for calculating mean squared error (MSE)
 def MSE_func(y_data,y_model):
