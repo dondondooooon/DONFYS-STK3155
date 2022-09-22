@@ -22,8 +22,11 @@ def commandline_check():
         exit(1)
 
 # Vanilla 1-D Data Generation
-def simple_function(x):
-    return 2.0*x*x+5.0*x
+def simple_function(x,noise,noisy):
+    if noisy == True:
+        return 2.0+5*x*x+0.1*noise
+    else:
+        return 2.0+5*x*x+0.1
 
 # Franke Function
 def FrankeFunction(x,y):
@@ -41,7 +44,7 @@ def create_X(x,y,n,simple):
         l = n + 1 
         X = np.ones((N,l))      # Initialize design matrix X
         for i in range(1,n+1):  # Looping through columns 1 to n
-            X[:,i] = np.squeeze(x)**(i) 
+            X[:,i] = x**i #np.squeeze?
 
     else: # Frank Function Design Matrix
         X = np.ones((N,l))          # Initialize design matrix X
@@ -65,9 +68,9 @@ def SVD(A): # Takes as input a numpy matrix A and returns inv(A) based on singul
 
 # Function for performing OLS
 def mylinreg(X,fx):
-    # beta = SVD(X.T.dot(X)).dot(X.T).dot(fx)
+    # A = X.T.dot(X)
+    # beta = SVD(A).dot(X.T).dot(fx)
     beta = np.linalg.inv(X.T.dot(X)).dot(X.T).dot(fx)
-    # beta = np.linalg.svd 
     return beta # Returns optimal beta
     
 # Scaling Data 
@@ -81,12 +84,11 @@ def scale_data(X,y):
 # Mean Squared Error (MSE)
 def MSE_func(y_data,y_model):
     n = np.size(y_model)
-    return np.sum((y_data-y_model)**2)/n
+    return np.sum((y_data-y_model)**2)/n # REMOVE THIS n daw...
 
 # R2 Score
 def R2(y_data, y_model):
-    return 1-np.sum( (y_data - y_model)**2) /\
-         np.sum((y_data - np.mean(y_data)) ** 2 )
+    return 1-np.sum( (y_data - y_model)**2) / np.sum( (y_data - np.mean(y_data)) ** 2 )
 
 # Relative error 
 def RelativeError_func(y_data,y_model):
