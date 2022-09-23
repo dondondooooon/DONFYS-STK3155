@@ -84,7 +84,7 @@ def scale_data(X,y):
 # Mean Squared Error (MSE)
 def MSE_func(y_data,y_model):
     n = np.size(y_model)
-    return np.sum((y_data-y_model)**2)/n # REMOVE THIS n daw...
+    return np.sum((y_data-y_model)**2)/n 
 
 # R2 Score
 def R2(y_data, y_model):
