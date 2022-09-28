@@ -66,12 +66,12 @@ def mylinreg(X,fx):
     return beta # Returns optimal beta
     
 # Scaling Data 
-def scale_data(X,y):
-     scaler = StandardScaler()
-     scaler.fit(X)
-     Xscaled = scaler.transform(X)
-     yscaled = scaler.transform(y)
-     return Xscaled, yscaled
+def scale_data(xtrain,xtest):
+    scaler = StandardScaler()
+    scaler.fit(xtrain)
+    xtrainscaled = scaler.transform(xtrain)
+    xtestscaled = scaler.transform(xtest)
+    return xtrainscaled, xtestscaled
 
 # Mean Squared Error (MSE)
 def MSE_func(y_data,y_model):
@@ -86,10 +86,41 @@ def R2(y_data, y_model):
 def RelativeError_func(y_data,y_model):
     return abs((y_data-y_model)/y_data)
 
-# Plot the actual function
-def function_show(x,func):
-    plt.plot(x,func)
-    plt.xlabel("x")
-    plt.ylabel("y")
-    plt.title("The Function")
-    plt.show() 
+# MSE and R2 as functions of Complexity 
+def complexity_dependencies(x,y,n,func,phi,scaled):
+    MSE_sklTrain = np.zeros(n)
+    MSE_sklTest = np.zeros(n)
+    R2_sklTrain = np.zeros(n)
+    R2_sklTest = np.zeros(n)
+    MSE_train = np.zeros(n)
+    MSE_test = np.zeros(n)
+    r2train = np.zeros(n)
+    r2test = np.zeros(n)
+
+    for degree in phi: # skipped 0th complexity 
+        X = create_X(x,0,degree,True) # Build Design Matrix
+        # Splitting the Data
+        X_train, X_test, y_train, y_test = train_test_split\
+          (X,func, test_size = 0.2)#, random_state=69) 
+        # Scale the Data
+        if scaled == True:
+            X_train, X_test = scale_data(X_train,X_test)
+        # Training 
+        beta = mylinreg(X_train,y_train) # Beta 
+        ytilde = X_train @ beta # Model Function
+        # Testing
+        ypredict = X_test @ beta
+        # MSE & R2 score via own Algorithm
+        MSE_train[degree-1] = MSE_func(y_train,ytilde)  
+        MSE_test[degree-1] =  MSE_func(y_test,ypredict) 
+        r2train[degree-1] = R2(y_train,ytilde)
+        r2test[degree-1] = R2(y_test,ypredict)
+        # SciKitLearnRegCheck
+        clf = skl.LinearRegression(fit_intercept=True).fit(X_train,y_train) # fit_intercept=False ?
+        MSE_sklTrain[degree-1] = mean_squared_error(clf.predict(X_train),y_train)
+        MSE_sklTest[degree-1] = mean_squared_error(clf.predict(X_test),y_test)
+        R2_sklTrain[degree-1] = clf.score(X_train,y_train)
+        R2_sklTest[degree-1] = clf.score(X_test,y_test)
+
+    return (MSE_train,MSE_test,MSE_sklTrain,MSE_sklTest,\
+        r2train,r2test,R2_sklTrain,R2_sklTrain)
