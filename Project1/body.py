@@ -6,6 +6,7 @@ np.random.seed(69420) # Setting Random Seed constant for all the runs
 n = int(sys.argv[1]) # Max Polynomial Degree
 N = int(sys.argv[2]) # Number of datapoints
 noisy = sys.argv[3].lower() == "true"
+#scaling = sys.argv[4].lower() == "true"
 MSE_sklTrain = np.zeros(n)
 MSE_sklTest = np.zeros(n)
 R2_sklTrain = np.zeros(n)
@@ -14,6 +15,7 @@ MSE_train = np.zeros(n)
 MSE_test = np.zeros(n)
 r2train = np.zeros(n)
 r2test = np.zeros(n)
+
 phi = np.arange(1,n+1)
 noise = np.random.randn(N) # np.random.uniform(0,1,N) # Random Noise
 x = np.sort(np.random.uniform(0,1,N)) 
@@ -49,6 +51,9 @@ for degree in phi: # skipped 0th complexity
      MSE_sklTest[degree-1] = mean_squared_error(clf.predict(X_test),y_test)
      R2_sklTrain[degree-1] = clf.score(X_train,y_train)
      R2_sklTest[degree-1] = clf.score(X_test,y_test)
+
+# Show the actual function 
+function_show(x,func)
 
 print("MSE_TRAIN: ", MSE_train, "\n")
 print("MSE_TEST: ", MSE_test, "\n")

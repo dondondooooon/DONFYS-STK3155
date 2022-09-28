@@ -23,10 +23,11 @@ def commandline_check():
 
 # Vanilla 1-D Data Generation
 def simple_function(x,noise,noisy):
+    function_ = np.e**-x + 0.5*x**3 # 2.0+5*x*x
     if noisy == True:
-        return 2.0+5*x*x+0.1*noise
+        return function_+0.1*noise
     else:
-        return 2.0+5*x*x+0.1
+        return function_
 
 # Franke Function
 def FrankeFunction(x,y):
@@ -68,9 +69,11 @@ def SVD(A): # Takes as input a numpy matrix A and returns inv(A) based on singul
 
 # Function for performing OLS
 def mylinreg(X,fx):
-    # A = X.T.dot(X)
+    A = X.T.dot(X)
     # beta = SVD(A).dot(X.T).dot(fx)
     beta = np.linalg.inv(X.T.dot(X)).dot(X.T).dot(fx)
+    # beta = np.linalg.pinv(A).dot(X.T).dot(fx)
+    # np.pinv does the same thing try it out!!!
     return beta # Returns optimal beta
     
 # Scaling Data 
@@ -93,3 +96,11 @@ def R2(y_data, y_model):
 # Relative error 
 def RelativeError_func(y_data,y_model):
     return abs((y_data-y_model)/y_data)
+
+# Plot the actual function
+def function_show(x,func):
+    plt.plot(x,func)
+    plt.xlabel("x")
+    plt.ylabel("y")
+    plt.title("The Function")
+    plt.show() 
