@@ -2,7 +2,7 @@ from header import *    # Import header file
 commandline_check()
 
 # Initialize Values & Containers
-np.random.seed(69420) # Setting Random Seed constant for all the runs
+np.random.seed(6969) # Setting Random Seed constant for all the runs
 n = int(sys.argv[1]) # Max Polynomial Degree
 N = int(sys.argv[2]) # Number of datapoints
 noisy = sys.argv[3].lower() == "true"
@@ -28,7 +28,7 @@ for degree in phi: # skipped 0th complexity
      X = create_X(x,0,degree,True) # Build Design Matrix
      # Splitting the Data
      X_train, X_test, y_train, y_test = train_test_split\
-          (X,func, test_size = 0.3)#, random_state=69) 
+          (X,func, test_size = 0.2)#, random_state=69) 
 
 # SCALE HERE B4 FITTING :: so it'd be mylinreg(X_train_scaled, y_train)
 
@@ -38,34 +38,38 @@ for degree in phi: # skipped 0th complexity
      # Testing
      ypredict = X_test @ beta
      # MSE & R2 score via own Algorithm
-     MSE_train[degree-1] = np.log( MSE_func(y_train,ytilde)  )
-     MSE_test[degree-1] =  np.log( MSE_func(y_test,ypredict) )
+     MSE_train[degree-1] = MSE_func(y_train,ytilde)  
+     MSE_test[degree-1] =  MSE_func(y_test,ypredict) 
      r2train[degree-1] = R2(y_train,ytilde)
      r2test[degree-1] = R2(y_test,ypredict)
      # print("MSE_TRAIN: ", MSE_train[degree-1])
      # print("MSE_TEST: ", MSE_test[degree-1])
      # print("Diff: ", MSE_train[degree-1]-MSE_test[degree-1])
      # SciKitLearnRegCheck
-     clf = skl.LinearRegression().fit(X_train,y_train) # fit_intercept=False ?
+     clf = skl.LinearRegression(fit_intercept=True).fit(X_train,y_train) # fit_intercept=False ?
      MSE_sklTrain[degree-1] = mean_squared_error(clf.predict(X_train),y_train)
      MSE_sklTest[degree-1] = mean_squared_error(clf.predict(X_test),y_test)
      R2_sklTrain[degree-1] = clf.score(X_train,y_train)
      R2_sklTest[degree-1] = clf.score(X_test,y_test)
 
-# Show the actual function 
-function_show(x,func)
+print("\nThe complexity with the min. MSE in training:",phi[np.argmin(MSE_train)])
+print("The complexity with the min. MSE in test",phi[np.argmin(MSE_test)], "\n")
 
-print("MSE_TRAIN: ", MSE_train, "\n")
-print("MSE_TEST: ", MSE_test, "\n")
-print("Train-Test: ", MSE_train-MSE_test, "\n")
+# Show the actual function
+plt.style.use("fivethirtyeight") 
+function_show(x,func)
+# # Print MSE
+# print("MSE_TRAIN: ", MSE_train, "\n")
+# print("MSE_TEST: ", MSE_test, "\n")
+# Difference of own code for OLS vs. SKL
 print("Algo. Train Diff.: ", MSE_sklTrain-MSE_train, "\n")
-print("Algo. Test Diff.: ", MSE_sklTest-MSE_train, "\n\n\n")
-#plt.plot(phi,MSE_sklTrain, label="SKL_TRAIN")
-#plt.plot(phi,MSE_sklTest, label="SKL_TEST")
-plt.plot(phi,MSE_train, label="MSE_TRAIN")
-plt.plot(phi,MSE_test, label="MSE_TEST")
+print("Algo. Test Diff.: ", MSE_sklTest-MSE_test, "\n\n\n")
+plt.plot(phi,np.log(MSE_train), label="MSE_TRAIN")
+plt.plot(phi,np.log(MSE_sklTrain), label="SKL_TRAIN")
+plt.plot(phi,np.log(MSE_sklTest), "--", label="SKL_TEST")
+plt.plot(phi,np.log(MSE_test), "--", label="MSE_TEST")
 plt.xlabel(r"$\Phi$")
-plt.ylabel(r"ln(MSE)")
+plt.ylabel(r"MSE")
 # plt.savefig("plots/degree="+str(n)+"N="+str(N)+"simple.pdf")
 # "n:",n,"; N:",N,"; Noisy?:",noisy
 plt.title(f"n:{n}; N:{N}; Noise:{noisy}")
@@ -74,7 +78,7 @@ plt.show()
 
 # print("R2_TRAIN: ", r2train, "\n")
 # print("R2_TEST: ", r2test, "\n")
-# print("Train-Test: ", r2train-r2test, "\n")
+# # print("Train-Test: ", r2train-r2test, "\n") # # dont think it's significant to show the diff
 # print("Algo. Train Diff.: ", R2_sklTrain-r2train, "\n")
 # print("Algo. Test Diff.: ", R2_sklTest-r2test, "\n")
 # #plt.plot(phi,R2_sklTrain, label="SKL_TRAIN")

@@ -23,7 +23,7 @@ def commandline_check():
 
 # Vanilla 1-D Data Generation
 def simple_function(x,noise,noisy):
-    function_ = np.e**-x + 0.5*x**3 # 2.0+5*x*x
+    function_ = 7.2*x**5 + 0.5*x**2 # 2.5*np.e**-x + 0.72*x**x 
     if noisy == True:
         return function_+0.1*noise
     else:
@@ -47,9 +47,9 @@ def create_X(x,y,n,simple):
         for i in range(1,n+1):  # Looping through columns 1 to n
             X[:,i] = x**i #np.squeeze?
 
-    else: # Frank Function Design Matrix
-        X = np.ones((N,l))          # Initialize design matrix X
-        for i in range(1,n+1):      # Loop through features 1 to n (skipped 0)
+    else:                       # Frank Function Design Matrix
+        X = np.ones((N,l))      # Initialize design matrix X
+        for i in range(1,n+1):  # Loop through features 1 to n (skipped 0)
             q = int((i)*(i+1)/2)    
             for k in range(i+1):
                 X[:,q+k]=(x**(i-k))*y**k  # Calculate the right polynomial term
@@ -59,21 +59,10 @@ def create_X(x,y,n,simple):
 ****************************************************************************************
 '''
 
-# Function for performing SVD on non-invertible matrix
-def SVD(A): # Takes as input a numpy matrix A and returns inv(A) based on singular value decomposition (SVD)
-    U, S, VT = np.linalg.svd(A)
-    D = np.zeros((len(U),len(VT)))
-    for i in range(0,len(VT)):
-        D[i,i]=S[i]
-    return U @ D @ VT
-
 # Function for performing OLS
 def mylinreg(X,fx):
-    A = X.T.dot(X)
-    # beta = SVD(A).dot(X.T).dot(fx)
-    beta = np.linalg.inv(X.T.dot(X)).dot(X.T).dot(fx)
-    # beta = np.linalg.pinv(A).dot(X.T).dot(fx)
-    # np.pinv does the same thing try it out!!!
+    A = np.linalg.pinv(X.T.dot(X)) # SVD inverse
+    beta = A.dot(X.T).dot(fx)
     return beta # Returns optimal beta
     
 # Scaling Data 
