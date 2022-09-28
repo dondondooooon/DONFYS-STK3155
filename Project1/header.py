@@ -14,12 +14,7 @@ from sklearn.metrics import mean_squared_error
 from sklearn.model_selection import  train_test_split
 from sklearn.preprocessing import MinMaxScaler, StandardScaler, Normalizer
 import scipy as scp
-
-# Command Line Error
-def commandline_check():
-    if len(sys.argv) <= 2:
-        print('Command Line Error: Check your command line arguments')
-        exit(1)
+import argparse
 
 # Vanilla 1-D Data Generation
 def simple_function(x,noise,noisy):
