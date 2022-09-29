@@ -82,7 +82,7 @@ def RelativeError_func(y_data,y_model):
     return abs((y_data-y_model)/y_data)
 
 # MSE and R2 as functions of Complexity 
-def complexity_dependencies(x,y,n,func,phi,scaled):
+def complexity_dependencies(x,y,n,func,phi,simple):
     MSE_sklTrain = np.zeros(n)
     MSE_sklTest = np.zeros(n)
     R2_sklTrain = np.zeros(n)
@@ -93,13 +93,12 @@ def complexity_dependencies(x,y,n,func,phi,scaled):
     r2test = np.zeros(n)
 
     for degree in phi: # skipped 0th complexity 
-        X = create_X(x,0,degree,True) # Build Design Matrix
+        X = create_X(x,y,degree,simple) # Build Design Matrix
         # Splitting the Data
         X_train, X_test, y_train, y_test = train_test_split\
           (X,func, test_size = 0.2)#, random_state=69) 
-        # Scale the Data
-        if scaled == True:
-            X_train, X_test = scale_data(X_train,X_test)
+        # # Scale the Data
+        # X_train, X_test = scale_data(X_train,X_test)
         # Training 
         beta = mylinreg(X_train,y_train) # Beta 
         ytilde = X_train @ beta # Model Function
@@ -111,7 +110,7 @@ def complexity_dependencies(x,y,n,func,phi,scaled):
         r2train[degree-1] = R2(y_train,ytilde)
         r2test[degree-1] = R2(y_test,ypredict)
         # SciKitLearnRegCheck
-        clf = skl.LinearRegression(fit_intercept=True).fit(X_train,y_train) # fit_intercept=False ?
+        clf = skl.LinearRegression().fit(X_train,y_train) # fit_intercept=False ?
         MSE_sklTrain[degree-1] = mean_squared_error(clf.predict(X_train),y_train)
         MSE_sklTest[degree-1] = mean_squared_error(clf.predict(X_test),y_test)
         R2_sklTrain[degree-1] = clf.score(X_train,y_train)

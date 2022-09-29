@@ -18,8 +18,8 @@ def function_show(x,func):
 def mse_comp(MSE_train,MSE_test,MSE_sklTrain,MSE_sklTest,r2train,\
     r2test,R2_sklTrain,R2_sklTest,phi,printed,sklcompare,title):
     if printed == True: # Print Facts
-        print("\nThe complexity with the min. MSE in training:",phi[np.argmin(msetrain)])
-        print("The complexity with the min. MSE in test",phi[np.argmin(msetest)], "\n")
+        print("\nThe complexity with the min. MSE in training:",phi[np.argmin(MSE_train)])
+        print("The complexity with the min. MSE in test",phi[np.argmin(MSE_test)], "\n")
         print("MSE_TRAIN: ", MSE_train, "\n")
         print("MSE_TEST: ", MSE_test, "\n")
         print("R2_TRAIN: ", r2train, "\n")

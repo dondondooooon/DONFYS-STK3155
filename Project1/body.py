@@ -9,7 +9,6 @@ parser.add_argument('-df','--data_func', metavar='', required=True, help='Data F
 parser.add_argument('-n','--max_degree', metavar='', required=True, help='Max Polynomial Degree')
 parser.add_argument('-N','--data_points', metavar='', required=True, help='Number of Datapoints')
 parser.add_argument('-eps','--noise_data', metavar='', required=True, help='Add Epsilon Noise?')
-parser.add_argument('-sc','--scaled_data', metavar='', required=True, help='Scale the data?')
 parser.add_argument('-p','--print_results', metavar='', required=True, help='Print Results?')
 parser.add_argument('-skl','--skl_compare', metavar='', required=True, help='Compare to SciKitLearn')
 args = parser.parse_args()
@@ -18,7 +17,6 @@ args = parser.parse_args()
 n = int(args.max_degree) # Max Polynomial Degree
 N = int(args.data_points) # Number of datapoints
 noisy = args.noise_data.lower() == "noisy"
-scaling = args.scaled_data.lower() == "scale"
 printed = args.print_results.lower() == "print"
 sklcompare = args.skl_compare.lower() == "compare"
 title = f"n:{n}; N:{N}; Noise:{noisy}"
@@ -29,15 +27,18 @@ y = np.sort(np.random.uniform(0,1,N))
 # Data_Function
 if args.data_func.lower() == "simple": # Easy 1D Function
      func = simple_function(x,noise,noisy) 
+     simple = True
+     y = 0
 elif args.data_func.lower() == "frank": # Frank Function
      func = FrankeFunction(x,y)
+     simple = False
 else:
      print('Command Line Error: Check your command line arguments\n',\
           '\n Especially for -df DATA_FUNC')
      exit(1)
 
 msetrain, msetest, mskltrain, mskltest, r2train, r2test,\
-     rskltrain, rskltest = complexity_dependencies(x,y,n,func,phi,scaling) # OLS MSE [from header]
+     rskltrain, rskltest = complexity_dependencies(x,y,n,func,phi,simple) # OLS MSE [from header]
 function_show(x,func)    # Show the actual function [from legs]
 mse_comp(msetrain,msetest,mskltrain,mskltest,r2train,r2test,\
      rskltrain,rskltest,phi,printed,sklcompare,title) # Plots + Prints [from legs]
