@@ -27,18 +27,16 @@ y = np.sort(np.random.uniform(0,1,N))
 # Data_Function
 if args.data_func.lower() == "simple": # Easy 1D Function
      func = simple_function(x,noise,noisy) 
-     simple = True
      y = 0
 elif args.data_func.lower() == "frank": # Frank Function
      func = FrankeFunction(x,y)
-     simple = False
 else:
      print('Command Line Error: Check your command line arguments\n',\
           '\n Especially for -df DATA_FUNC')
      exit(1)
 
 msetrain, msetest, mskltrain, mskltest, r2train, r2test,\
-     rskltrain, rskltest = complexity_dependencies(x,y,n,func,phi,simple) # OLS MSE [from header]
+     rskltrain, rskltest = complexity_dependencies(x,y,n,func,phi) # OLS MSE [from header]
 function_show(x,func)    # Show the actual function [from legs]
 mse_comp(msetrain,msetest,mskltrain,mskltest,r2train,r2test,\
      rskltrain,rskltest,phi,printed,sklcompare,title) # Plots + Prints [from legs]

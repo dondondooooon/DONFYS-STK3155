@@ -15,6 +15,7 @@ from sklearn.model_selection import  train_test_split
 from sklearn.preprocessing import MinMaxScaler, StandardScaler, Normalizer
 import scipy as scp
 import argparse
+from IPython.display import display
 
 # Vanilla 1-D Data Generation
 def simple_function(x,noise,noisy):
@@ -33,21 +34,20 @@ def FrankeFunction(x,y):
     return term1 + term2 + term3 + term4
 
 # Generating Design Matrix
-def create_X(x,y,n,simple):
-    N = len(x)                  # Number of rows in design matrix // corr. to # of inputs to outputs
-    l = int((n+1)*(n+2)/2)		# Number of elements in beta // Number of columns in design matrix // corr. to the weights
-    if simple == True:          # For simple 1D function
-        l = n + 1 
-        X = np.ones((N,l))      # Initialize design matrix X
-        for i in range(1,n+1):  # Looping through columns 1 to n
-            X[:,i] = x**i #np.squeeze?
-
-    else:                       # Frank Function Design Matrix
-        X = np.ones((N,l))      # Initialize design matrix X
-        for i in range(1,n+1):  # Loop through features 1 to n (skipped 0)
-            q = int((i)*(i+1)/2)    
-            for k in range(i+1):
-                X[:,q+k]=(x**(i-k))*y**k  # Calculate the right polynomial term
+def create_X(x,y,n):
+    N = len(x)              # No. of rows in design matrix // corr. to # of inputs to outputs
+    l = int((n+1)*(n+2)/2)  # No. of elements in beta // Number of columns in design matrix // corr. to the weights
+    # Frank Function 2D Design Matrix
+    X = np.ones((N,l))      # Initialize design matrix X
+    for i in range(1,n+1):  # Loop through features 1 to n (skipped 0)
+        q = int((i)*(i+1)/2)    
+        for k in range(i+1):
+            X[:,q+k]=(x**(i-k))*y**k  # Calculate the right polynomial term
+    # # For simple 1D Function Design Matrix
+    # l = n + 1 
+    # X = np.ones((N,l))      # Initialize design matrix X
+    # for i in range(1,n+1):  # Looping through columns 1 to n
+    #     X[:,i] = x**i #np.squeeze?
     return X
 
 '''
@@ -82,7 +82,7 @@ def RelativeError_func(y_data,y_model):
     return abs((y_data-y_model)/y_data)
 
 # MSE and R2 as functions of Complexity 
-def complexity_dependencies(x,y,n,func,phi,simple):
+def complexity_dependencies(x,y,n,func,phi):
     MSE_sklTrain = np.zeros(n)
     MSE_sklTest = np.zeros(n)
     R2_sklTrain = np.zeros(n)
@@ -93,7 +93,7 @@ def complexity_dependencies(x,y,n,func,phi,simple):
     r2test = np.zeros(n)
 
     for degree in phi: # skipped 0th complexity 
-        X = create_X(x,y,degree,simple) # Build Design Matrix
+        X = create_X(x,y,degree) # Build Design Matrix
         # Splitting the Data
         X_train, X_test, y_train, y_test = train_test_split\
           (X,func, test_size = 0.2)#, random_state=69) 
@@ -115,6 +115,10 @@ def complexity_dependencies(x,y,n,func,phi,simple):
         MSE_sklTest[degree-1] = mean_squared_error(clf.predict(X_test),y_test)
         R2_sklTrain[degree-1] = clf.score(X_train,y_train)
         R2_sklTest[degree-1] = clf.score(X_test,y_test)
+        # Display BetaValues... maybe export and then replot them? 
+        BetaValues = pd.DataFrame(beta)
+        BetaValues.columns = [r'$\beta$']
+        display(BetaValues)
 
     return (MSE_train,MSE_test,MSE_sklTrain,MSE_sklTest,\
         r2train,r2test,R2_sklTrain,R2_sklTrain)
