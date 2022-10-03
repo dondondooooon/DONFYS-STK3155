@@ -37,9 +37,9 @@ else:
 
 msetrain, msetest, mskltrain, mskltest, r2train, r2test,\
      rskltrain, rskltest = complexity_dependencies(x,y,n,func,phi) # OLS MSE [from header]
-function_show(x,func)    # Show the actual function [from legs]
-mse_comp(msetrain,msetest,mskltrain,mskltest,r2train,r2test,\
-     rskltrain,rskltest,phi,printed,sklcompare,title) # Plots + Prints [from legs]
+#function_show(x,func)    # Show the actual function [from legs]
+#mse_comp(msetrain,msetest,mskltrain,mskltest,r2train,r2test,\
+#     rskltrain,rskltest,phi,printed,sklcompare,title) # Plots + Prints [from legs]
 
 # import inspect
 # def count_positional_args_required(func):

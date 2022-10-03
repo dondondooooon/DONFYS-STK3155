@@ -81,6 +81,10 @@ def R2(y_data, y_model):
 def RelativeError_func(y_data,y_model):
     return abs((y_data-y_model)/y_data)
 
+# Boostrap Resampling method
+def bootstraping():
+    return 0
+
 # MSE and R2 as functions of Complexity 
 def complexity_dependencies(x,y,n,func,phi):
     MSE_sklTrain = np.zeros(n)
@@ -91,8 +95,9 @@ def complexity_dependencies(x,y,n,func,phi):
     MSE_test = np.zeros(n)
     r2train = np.zeros(n)
     r2test = np.zeros(n)
-
-    for degree in phi: # skipped 0th complexity 
+    degree_beta = []
+    # Loop from degree 1 to max_degree polynomials
+    for degree in phi: 
         X = create_X(x,y,degree) # Build Design Matrix
         # Splitting the Data
         X_train, X_test, y_train, y_test = train_test_split\
@@ -101,6 +106,7 @@ def complexity_dependencies(x,y,n,func,phi):
         # X_train, X_test = scale_data(X_train,X_test)
         # Training 
         beta = mylinreg(X_train,y_train) # Beta 
+        degree_beta.append(beta)
         ytilde = X_train @ beta # Model Function
         # Testing
         ypredict = X_test @ beta
@@ -115,10 +121,16 @@ def complexity_dependencies(x,y,n,func,phi):
         MSE_sklTest[degree-1] = mean_squared_error(clf.predict(X_test),y_test)
         R2_sklTrain[degree-1] = clf.score(X_train,y_train)
         R2_sklTest[degree-1] = clf.score(X_test,y_test)
+
         # Display BetaValues... maybe export and then replot them? 
-        BetaValues = pd.DataFrame(beta)
-        BetaValues.columns = [r'$\beta$']
-        display(BetaValues)
+        # I could maybe export onto same file so that they stack as columns per new beta set and then read them off and plot bval as function of & then degrees per polynom degree
+        #BetaValues = pd.DataFrame(beta, columns=f'Max_Degree={phi[degree]}')
+        #BetaValues.columns = [f"beta_max{degree}"]
+        #BetaValues.to_csv('results/existing.csv',mode='a')
+        # display(BetaValues)
+    BetaValues = pd.DataFrame(degree_beta)
+    BetaValues.to_csv('results/existing.csv', index=False)
+    display(BetaValues)
 
     return (MSE_train,MSE_test,MSE_sklTrain,MSE_sklTest,\
         r2train,r2test,R2_sklTrain,R2_sklTrain)
