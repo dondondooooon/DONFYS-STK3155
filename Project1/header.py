@@ -1,12 +1,10 @@
 # header.py
 
 # Import Library
-from pickletools import read_uint1
 import sys
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
-import random
 import sklearn.linear_model as skl
 from sklearn.preprocessing import PolynomialFeatures
 from sklearn.linear_model import LinearRegression
@@ -16,6 +14,11 @@ from sklearn.preprocessing import MinMaxScaler, StandardScaler, Normalizer
 import scipy as scp
 import argparse
 from IPython.display import display
+from matplotlib import cm
+from matplotlib.ticker import LinearLocator, FormatStrFormatter
+from mpl_toolkits.mplot3d import Axes3D
+from scipy.stats import norm
+# import warnings
 
 # Vanilla 1-D Data Generation
 def simple_function(x,noise,noisy):
@@ -26,12 +29,15 @@ def simple_function(x,noise,noisy):
         return function_
 
 # Franke Function
-def FrankeFunction(x,y):
+def FrankeFunction(x,y,noise,noisy):
     term1 = 0.75*np.exp(-(0.25*(9*x-2)**2) - 0.25*((9*y-2)**2))
     term2 = 0.75*np.exp(-((9*x+1)**2)/49.0 - 0.1*(9*y+1))
     term3 = 0.5*np.exp(-(9*x-7)**2/4.0 - 0.25*((9*y-3)**2))
     term4 = -0.2*np.exp(-(9*x-4)**2 - (9*y-7)**2)
-    return term1 + term2 + term3 + term4
+    if noisy == True:
+        return (term1+term2+term3+term4)+0.1*noise
+    else:
+        return term1 + term2 + term3 + term4
 
 # Generating Design Matrix
 def create_X(x,y,n):
@@ -55,9 +61,9 @@ def create_X(x,y,n):
 '''
 
 # Function for performing OLS
-def mylinreg(X,fx):
+def OLSlinreg(X,f):
     A = np.linalg.pinv(X.T.dot(X)) # SVD inverse
-    beta = A.dot(X.T).dot(fx)
+    beta = A.dot(X.T).dot(f)
     return beta # Returns optimal beta
     
 # Scaling Data 
@@ -81,40 +87,56 @@ def R2(y_data, y_model):
 def RelativeError_func(y_data,y_model):
     return abs((y_data-y_model)/y_data)
 
-# Boostrap Resampling method
-def bootstraping():
-    return 0
+# For plotting beta as increasing order of polynomials 
+def plot_beta_save(betavals,beta):
+    return betavals.append(beta)
 
-# MSE and R2 as functions of Complexity 
-def complexity_dependencies(x,y,n,func,phi):
-    MSE_sklTrain = np.zeros(n)
-    MSE_sklTest = np.zeros(n)
-    R2_sklTrain = np.zeros(n)
-    R2_sklTest = np.zeros(n)
-    MSE_train = np.zeros(n)
-    MSE_test = np.zeros(n)
-    r2train = np.zeros(n)
-    r2test = np.zeros(n)
+# Boostrap Resampling method
+def bootstraping(xtrain,ytrain):
+    N = len(xtrain)
+    ind = np.random.randint(0,N,size=(N,))
+    xprime = xtrain[ind]
+    funcprime = ytrain[ind]
+    return xprime,funcprime
+
+# MSE and R2 via OLS
+def OLS_learning(x,y,n,func,phi,noisy):
+    # Initiate Containers
     degree_beta = []
+    r2test = np.zeros(n)
+    r2train = np.zeros(n)
+    MSE_test = np.zeros(n)
+    MSE_train = np.zeros(n)
+    R2_sklTest = np.zeros(n)
+    R2_sklTrain = np.zeros(n)
+    MSE_sklTest = np.zeros(n)
+    MSE_sklTrain = np.zeros(n)
+
     # Loop from degree 1 to max_degree polynomials
     for degree in phi: 
         X = create_X(x,y,degree) # Build Design Matrix
+
         # Splitting the Data
         X_train, X_test, y_train, y_test = train_test_split\
           (X,func, test_size = 0.2)#, random_state=69) 
+
         # # Scale the Data
         # X_train, X_test = scale_data(X_train,X_test)
+
         # Training 
-        beta = mylinreg(X_train,y_train) # Beta 
-        degree_beta.append(beta)
+        beta = OLSlinreg(X_train,y_train) # Calculate Beta 
         ytilde = X_train @ beta # Model Function
+        # plot_beta_save(degree_beta,beta) # For plotting beta as increasing order of polynomials 
+
         # Testing
         ypredict = X_test @ beta
+
         # MSE & R2 score via own Algorithm
         MSE_train[degree-1] = MSE_func(y_train,ytilde)  
         MSE_test[degree-1] =  MSE_func(y_test,ypredict) 
         r2train[degree-1] = R2(y_train,ytilde)
         r2test[degree-1] = R2(y_test,ypredict)
+
         # SciKitLearnRegCheck
         clf = skl.LinearRegression().fit(X_train,y_train) # fit_intercept=False ?
         MSE_sklTrain[degree-1] = mean_squared_error(clf.predict(X_train),y_train)
@@ -122,15 +144,39 @@ def complexity_dependencies(x,y,n,func,phi):
         R2_sklTrain[degree-1] = clf.score(X_train,y_train)
         R2_sklTest[degree-1] = clf.score(X_test,y_test)
 
-        # Display BetaValues... maybe export and then replot them? 
-        # I could maybe export onto same file so that they stack as columns per new beta set and then read them off and plot bval as function of & then degrees per polynom degree
-        #BetaValues = pd.DataFrame(beta, columns=f'Max_Degree={phi[degree]}')
-        #BetaValues.columns = [f"beta_max{degree}"]
-        #BetaValues.to_csv('results/existing.csv',mode='a')
-        # display(BetaValues)
-    BetaValues = pd.DataFrame(degree_beta)
-    BetaValues.to_csv('results/existing.csv', index=False)
-    display(BetaValues)
+    # For plotting beta as increasing order of polynomials    
+    # BetaValues = pd.DataFrame(degree_beta)
+    # BetaValues.to_csv(f'results/BetaValsDegNoise:{noisy}.csv', index=False)
 
     return (MSE_train,MSE_test,MSE_sklTrain,MSE_sklTest,\
         r2train,r2test,R2_sklTrain,R2_sklTrain)
+
+# OLS MSE bootstrap resampling 
+def OLS_boots(x,y,n,func,phi,nB):
+    # warnings.filterwarnings('ignore') # for the bias calculation
+    var = np.zeros((n,nB))
+    bias = np.zeros((n,nB))
+    msesamp = np.zeros((n,nB))
+
+    for degree in phi:
+        X = create_X(x,y,degree) # Build Design Matrix
+        ypred = np.empty((int(0.2*len(X)),nB))
+        # Splitting the Data
+        # X_train, X_test, y_train, y_test = train_test_split\
+        #     (X,func, test_size = 0.2)
+        for boots in range(0,nB):
+            # # Splitting the Data
+            X_train, X_test, y_train, y_test = train_test_split\
+                (X,func, test_size = 0.2)
+            # Sample Data
+            X_trboot, y_trboot = bootstraping(X_train,y_train)
+            beta = OLSlinreg(X_trboot,y_trboot) # Calculate Beta
+            ypred[:,boots] = X_test @ beta  # Testing
+            msesamp[degree-1,boots] = MSE_func(y_test,ypred[:,boots]) # Calculate MSE
+            # bias[degree-1,boots] = np.mean( (y_test - np.mean(ypred, axis=1, keepdims=True))**2 )
+            # var[degree-1,boots] = np.mean( np.var(ypred, axis=1, keepdims=True) )
+    # print("ferdig")
+    return msesamp,bias,var 
+
+    
+    
