@@ -1,8 +1,10 @@
 from header import *     # Import header file
 from legs import *       # Import 
+
 # commandline_check()
 
-np.random.seed(6969) # Setting Random Seed constant for all the runs
+# np.random.seed(6969) # Setting Random Seed constant for all the runs
+np.random.seed(7132)
 
 # Read Commandline Arguments 
 parser = argparse.ArgumentParser(description="Choose which function for data")
@@ -36,23 +38,36 @@ else:
           '\n Especially for -df DATA_FUNC')
      exit(1)
 
-N_bs = 1000 # make argpars later
+N_bs = 90 # make argpars later
+
+bmse, bbias, bvar = OLS_boots(x,y,n,func,phi,N_bs)
 
 # Main magic happenings
 msetrain, msetest, mskltrain, mskltest, r2train, r2test,\
      rskltrain, rskltest = OLS_learning(x,y,n,func,phi,noisy) # OLS MSE [from header]
+     
 # bmse, bbias, bvar = OLS_boots(x,y,n,func,phi,N_bs)
+
+print(np.mean(bmse, axis=1, keepdims=True))
+print("\n",msetest)
+da = pd.DataFrame(bmse)
+display(da)
+
+# plt.plot(np.log(np.mean(bmse, axis=1, keepdims=True)).ravel())
+# plt.xlabel("degree")
+# plt.ylabel("ln(MSE)")
+# plt.show()
 
 # Plot Functions
 # simple1D(x,func)    # Plot 1D simple function [from legs]
 # frankee(x,y,noise,noisy)
-# mse_comp(msetrain,msetest,mskltrain,mskltest,r2train,r2test,\
-#     rskltrain,rskltest,phi,printed,sklcompare,title) # Plots + Prints [from legs]
+mse_comp(msetrain,msetest,mskltrain,mskltest,r2train,r2test,\
+    rskltrain,rskltest,phi,printed,sklcompare,title) # Plots + Prints [from legs]
 # beta_plot(noisy)
 # print(msetest,"\n\n")
 # print(mskltest,"\n\n")
 # print(np.mean(bmse,axis=1,keepdims=True))
-# bOLSplot(phi,bmse,bbias,bvar)
+bOLSplot(phi,bmse,bbias,bvar)
 
 # import inspect
 # def count_positional_args_required(func):

@@ -11,7 +11,7 @@ def Ridgelinreg(X,f,lmb):
     return beta # Returns optimal beta 
 
 # MSE via Ridge
-def Ridge_learning(x,y,n,func,phi):
+def Ridge_learning(x,y,n,func,phi,lmbd):
     # Initiate Containers
     MSE_test = np.zeros(n)
     MSE_train = np.zeros(n)
@@ -24,6 +24,9 @@ def Ridge_learning(x,y,n,func,phi):
         # Splitting the Data
         X_train, X_test, y_train, y_test = train_test_split\
             (X,func, test_size = 0.2)#, random_state=69)
+        for l in lmbd:
+            print("")
+    return 0
 
 """
 -----------------
@@ -94,8 +97,8 @@ def mse_comp(MSE_train,MSE_test,MSE_sklTrain,MSE_sklTest,r2train,\
     # MSE plot
     plt.style.use("ggplot") 
     plt.figure(figsize=set_size(345), dpi=80)
-    plt.plot(phi,np.log(MSE_train), color='green', label="MSE_TRAIN")
-    plt.plot(phi,np.log(MSE_test), "--", color='red', label="MSE_TEST")
+    plt.plot(phi, np.log( MSE_train ), color='green', label="MSE_TRAIN")
+    plt.plot(phi, np.log( MSE_test  ), "--", color='red', label="MSE_TEST")
     if sklcompare == True:
         plt.plot(phi,np.log(MSE_sklTrain), color="blue", label="SKL_TRAIN")
         plt.plot(phi,np.log(MSE_sklTest), "--", color="orange", label="SKL_TEST")
@@ -105,21 +108,22 @@ def mse_comp(MSE_train,MSE_test,MSE_sklTrain,MSE_sklTest,r2train,\
     plt.legend()
     # plt.savefig(f"results/initial/MSE_{title}.pdf", format='pdf', bbox_inches='tight')
     # plt.savefig(f"results/mse as function of n,N,noise/MSE_{title}.pdf", format='pdf', bbox_inches='tight')
+    # plt.savefig(f"results/scaled/MSE_{title}.pdf", format='pdf', bbox_inches='tight')
     plt.show()
 
-    # R2 plot
-    plt.figure(figsize=set_size(345), dpi=80)
-    plt.plot(phi,r2train, color='green', label="R2_TRAIN")
-    plt.plot(phi,r2test, "--", color='red', label="R2_TEST")
-    if sklcompare == True:
-        plt.plot(phi,R2_sklTrain, color="blue", label="SKL_TRAIN")
-        plt.plot(phi,R2_sklTest, "--", color="orange", label="SKL_TEST")
-    plt.xlabel(r"$\Phi$")
-    plt.ylabel(r"R2")
-    plt.title(title)
-    plt.legend()
-    # plt.savefig(f"results/initial/R2_{title}.pdf", format='pdf', bbox_inches='tight')
-    plt.show()
+    # # R2 plot
+    # plt.figure(figsize=set_size(345), dpi=80)
+    # plt.plot(phi,r2train, color='green', label="R2_TRAIN")
+    # plt.plot(phi,r2test, "--", color='red', label="R2_TEST")
+    # if sklcompare == True:
+    #     plt.plot(phi,R2_sklTrain, color="blue", label="SKL_TRAIN")
+    #     plt.plot(phi,R2_sklTest, "--", color="orange", label="SKL_TEST")
+    # plt.xlabel(r"$\Phi$")
+    # plt.ylabel(r"R2")
+    # plt.title(title)
+    # plt.legend()
+    # # plt.savefig(f"results/initial/R2_{title}.pdf", format='pdf', bbox_inches='tight')
+    # plt.show()
 
 def beta_plot(noisy):
     plt.style.use("ggplot") 
@@ -133,27 +137,31 @@ def beta_plot(noisy):
     plt.xlabel('Polynomial Variable')
     plt.ylabel(r'Beta Value $\beta$')
     plt.legend()
-    plt.savefig(f"results/betaplot5_noise:{noisy}.pdf", format='pdf', bbox_inches='tight')
+    # plt.savefig(f"results/betaplot5_noise:{noisy}.pdf", format='pdf', bbox_inches='tight')
     plt.show()
 
 # Plot OLS_boostrap results
 def bOLSplot(phi,mse,bias,var):
-    for degree in phi:
-        t = mse[degree-1,:]
-        # print(np.mean(t))
-        # 200 = # of bins
-        # the histogram of the bootstrapped data (normalized data if density = True)
-        n, binsboot, patches = plt.hist(t, 200, density=True, facecolor='red', alpha=0.75)
-        # add a 'best fit' line  
-        y = norm.pdf(binsboot, np.mean(t), np.std(t))
-        lt = plt.plot(binsboot, y, 'b', linewidth=1)
-        plt.xlabel('MSE')
-        plt.ylabel('Frequency')
-        plt.grid(True)
-        plt.title(f"Polydeg={degree}")
-        plt.show()
-    # plt.plot(phi, np.log( np.mean(mse, axis=1, keepdims=True)  ) , label='Error')
-    # plt.plot(phi, np.log( np.mean(bias, axis=1, keepdims=True) ) , label='bias')
-    # plt.plot(phi, np.log( np.mean(var, axis=1, keepdims=True)  ) , label='Variance')
-    # plt.legend()
-    # plt.show()
+    
+    plt.plot(phi, np.log( np.mean(mse, axis=1, keepdims=True) ) , label='MSE')
+    plt.xlabel("Degree")
+    plt.ylabel("ln(MSE)")
+    plt.plot(phi, np.log( np.mean(bias, axis=1, keepdims=True) ) , label='bias')
+    plt.plot(phi, np.log( np.mean(var, axis=1, keepdims=True)  ) , label='Variance')
+    plt.legend()
+    plt.show()
+
+    # for degree in phi:
+    #     t = mse[degree-1,:]
+    #     # print(np.mean(t))
+    #     # 200 = # of bins
+    #     # the histogram of the bootstrapped data (normalized data if density = True)
+    #     n, binsboot, patches = plt.hist(t, 50, density=True, facecolor='red', alpha=0.75)
+    #     # add a 'best fit' line  
+    #     y = norm.pdf(binsboot, np.mean(t), np.std(t))
+    #     lt = plt.plot(binsboot, y, 'b', linewidth=1)
+    #     plt.xlabel('MSE')
+    #     plt.ylabel('Frequency')
+    #     plt.grid(True)
+    #     plt.title(f"Polydeg={degree}")
+    #     plt.show()

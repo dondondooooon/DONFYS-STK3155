@@ -67,12 +67,15 @@ def OLSlinreg(X,f):
     return beta # Returns optimal beta
     
 # Scaling Data 
-def scale_data(xtrain,xtest):
+def scale_data(xtrain,xtest,ytrain,ytest):
     scaler = StandardScaler()
     scaler.fit(xtrain)
     xtrainscaled = scaler.transform(xtrain)
     xtestscaled = scaler.transform(xtest)
-    return xtrainscaled, xtestscaled
+    scaler.fit(ytrain)
+    ytrainscaled = scaler.transform(ytrain)
+    ytestscaled = scaler.transform(ytest)
+    return xtrainscaled, xtestscaled, ytrainscaled, ytestscaled
 
 # Mean Squared Error (MSE)
 def MSE_func(y_data,y_model):
@@ -119,13 +122,13 @@ def OLS_learning(x,y,n,func,phi,noisy):
         # Splitting the Data
         X_train, X_test, y_train, y_test = train_test_split\
           (X,func, test_size = 0.2)#, random_state=69) 
-
         # # Scale the Data
-        # X_train, X_test = scale_data(X_train,X_test)
+        # X_train, X_test, y_train, y_test = scale_data(X_train,X_test,y_train,y_test)
+
 
         # Training 
         beta = OLSlinreg(X_train,y_train) # Calculate Beta 
-        ytilde = X_train @ beta # Model Function
+        ytilde = X_train @ beta
         # plot_beta_save(degree_beta,beta) # For plotting beta as increasing order of polynomials 
 
         # Testing
@@ -160,21 +163,19 @@ def OLS_boots(x,y,n,func,phi,nB):
 
     for degree in phi:
         X = create_X(x,y,degree) # Build Design Matrix
-        ypred = np.empty((int(0.2*len(X)),nB))
         # Splitting the Data
-        # X_train, X_test, y_train, y_test = train_test_split\
-        #     (X,func, test_size = 0.2)
+        X_train, X_test, y_train, y_test = train_test_split\
+            (X,func, test_size = 0.2)
+        ypred = np.empty((y_test.shape[0],nB))
         for boots in range(0,nB):
-            # # Splitting the Data
-            X_train, X_test, y_train, y_test = train_test_split\
-                (X,func, test_size = 0.2)
             # Sample Data
             X_trboot, y_trboot = bootstraping(X_train,y_train)
             beta = OLSlinreg(X_trboot,y_trboot) # Calculate Beta
-            ypred[:,boots] = X_test @ beta  # Testing
+            ypred[:,boots] = (X_test @ beta).ravel()  # Testing
             msesamp[degree-1,boots] = MSE_func(y_test,ypred[:,boots]) # Calculate MSE
-            # bias[degree-1,boots] = np.mean( (y_test - np.mean(ypred, axis=1, keepdims=True))**2 )
-            # var[degree-1,boots] = np.mean( np.var(ypred, axis=1, keepdims=True) )
+            # msesamp[degree] = np.mean( np.mean((y_test - ypred)**2, axis=1, keepdims=True) )
+            bias[degree-1,boots] = np.mean( (y_test - np.mean(ypred, axis=1, keepdims=True))**2 )
+            var[degree-1,boots] = np.mean( np.var(ypred, axis=1, keepdims=True) )
     # print("ferdig")
     return msesamp,bias,var 
 
