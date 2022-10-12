@@ -2,36 +2,10 @@
 # For all plots and prints
 
 from header import *
-
-# Function for performing Ridge given a lambda
-def Ridgelinreg(X,f,lmb):
-    I = np.eye(X.shape[1],X.shape[1])
-    A = np.linalg.pinv(X.T @ X + lmb*I) # SVD inverse
-    beta = A @ X.T @ f
-    return beta # Returns optimal beta 
-
-# MSE via Ridge
-def Ridge_learning(x,y,n,func,phi,lmbd):
-    # Initiate Containers
-    MSE_test = np.zeros(n)
-    MSE_train = np.zeros(n)
-    MSE_sklTest = np.zeros(n)
-    MSE_sklTrain = np.zeros(n)
-
-    # Loop from polydeg = 1 to maxpolydeg
-    for degree in phi:
-        X = create_X(x,y,degree)
-        # Splitting the Data
-        X_train, X_test, y_train, y_test = train_test_split\
-            (X,func, test_size = 0.2)#, random_state=69)
-        for l in lmbd:
-            print("")
-    return 0
-
+from ridge import *
 """
 -----------------
 """
-
 # Set figure dimensions to avoid scaling in LaTeX.
 def set_size(width, fraction=1):
     # Width of figure (in pts)
@@ -76,7 +50,7 @@ def frankee(x,y,noise,noisy):
     plt.show()
     
 # Plot MSE and R2 as function of complexity + print MSE info
-def mse_comp(MSE_train,MSE_test,MSE_sklTrain,MSE_sklTest,r2train,\
+def ols_first(MSE_train,MSE_test,MSE_sklTrain,MSE_sklTest,r2train,\
     r2test,R2_sklTrain,R2_sklTest,phi,printed,sklcompare,title):
     width = 345
     if printed == True: # Print Facts
@@ -97,17 +71,18 @@ def mse_comp(MSE_train,MSE_test,MSE_sklTrain,MSE_sklTest,r2train,\
     # MSE plot
     plt.style.use("ggplot") 
     plt.figure(figsize=set_size(345), dpi=80)
-    plt.plot(phi, np.log( MSE_train ), color='green', label="MSE_TRAIN")
-    plt.plot(phi, np.log( MSE_test  ), "--", color='red', label="MSE_TEST")
+    plt.plot(phi, np.log10( MSE_train ), color='green', label="MSE_TRAIN")
+    plt.plot(phi, np.log10( MSE_test  ), "--", color='red', label="MSE_TEST")
     if sklcompare == True:
-        plt.plot(phi,np.log(MSE_sklTrain), color="blue", label="SKL_TRAIN")
-        plt.plot(phi,np.log(MSE_sklTest), "--", color="orange", label="SKL_TEST")
-    plt.xlabel(r"$\Phi$")
-    plt.ylabel(r"ln(MSE)")
+        plt.plot(phi,np.log10(MSE_sklTrain), color="blue", label="SKL_TRAIN")
+        plt.plot(phi,np.log10(MSE_sklTest), "--", color="orange", label="SKL_TEST")
+    plt.xlabel(r"$\phi$")
+    plt.ylabel(r"log10(MSE)")
     plt.title(title)
     plt.legend()
     # plt.savefig(f"results/initial/MSE_{title}.pdf", format='pdf', bbox_inches='tight')
-    # plt.savefig(f"results/mse as function of n,N,noise/MSE_{title}.pdf", format='pdf', bbox_inches='tight')
+    # plt.savefig(f"results/OwnCodeVsSKL/MSE_{title}.pdf", format='pdf', bbox_inches='tight')
+    # plt.savefig(f"MSE_{title}.pdf", format='pdf', bbox_inches='tight')
     # plt.savefig(f"results/scaled/MSE_{title}.pdf", format='pdf', bbox_inches='tight')
     plt.show()
 
@@ -119,10 +94,11 @@ def mse_comp(MSE_train,MSE_test,MSE_sklTrain,MSE_sklTest,r2train,\
     #     plt.plot(phi,R2_sklTrain, color="blue", label="SKL_TRAIN")
     #     plt.plot(phi,R2_sklTest, "--", color="orange", label="SKL_TEST")
     # plt.xlabel(r"$\Phi$")
-    # plt.ylabel(r"R2")
+    # plt.ylabel(r"$R^2$")
     # plt.title(title)
     # plt.legend()
     # # plt.savefig(f"results/initial/R2_{title}.pdf", format='pdf', bbox_inches='tight')
+    # # plt.savefig(f"results/OwnCodeVsSKL/R2_{title}.pdf", format='pdf', bbox_inches='tight')
     # plt.show()
 
 def beta_plot(noisy):
@@ -141,14 +117,16 @@ def beta_plot(noisy):
     plt.show()
 
 # Plot OLS_boostrap results
-def bOLSplot(phi,mse,bias,var):
-    
-    plt.plot(phi, np.log( np.mean(mse, axis=1, keepdims=True) ) , label='MSE')
-    plt.xlabel("Degree")
-    plt.ylabel("ln(MSE)")
-    plt.plot(phi, np.log( np.mean(bias, axis=1, keepdims=True) ) , label='bias')
-    plt.plot(phi, np.log( np.mean(var, axis=1, keepdims=True)  ) , label='Variance')
+def bOLSplot(phi,mse,bias,var,mseols,nboot):
+    plt.plot(phi, np.log10( mseols), label='MSE_test')
+    plt.plot(phi, np.log10(  np.nanmean(mse, axis=1, keepdims=True) ) , label='MSE_samp')
+    plt.xlabel(r"\Phi")
+    plt.ylabel("log10(MSE)")
+    plt.plot(phi, np.log10( bias)  , label='Bias')
+    plt.plot(phi, np.log10( var ), label='Variance')
     plt.legend()
+    plt.title(f"n=10; N=50; N_b:{nboot}")
+    plt.savefig(f"results/olsboots.pdf", format='pdf', bbox_inches='tight')
     plt.show()
 
     # for degree in phi:
@@ -165,3 +143,40 @@ def bOLSplot(phi,mse,bias,var):
     #     plt.grid(True)
     #     plt.title(f"Polydeg={degree}")
     #     plt.show()
+
+# Plot Ridge or Lasso plot
+def RidgePlot(msetrain,msetest,sklmsetrain,sklmsetest,phi,lambdas,title):
+    # Find Index of Minimum MSE as function of polynomial and lambda
+    min_ind = np.argmin(msetest)
+    mrow, mcol = np.where(msetest == msetest.ravel()[min_ind])
+    print("The lowest MSE is found at: Row:",mrow, "and Col:", mcol)
+
+    # # Plot colormap of MSE as function of n polydegree and lambda
+    # plt.imshow(msetest, cmap=cm.coolwarm)
+    # plt.xlabel(r"$\lambda$")
+    # plt.ylabel(r"n_degree")
+    # cbar = plt.colorbar()
+    # cbar.set_label('MSE')
+    # plt.title("Test:" + title + f"; Nlambda:{len(lambdas)}")
+    # # plt.savefig('results/Ridgestuff/colormapofmsetestridge.pdf', format='pdf', bbox_inches='tight')
+    # plt.show()
+
+    # # Plot MSE_Ridge or _Lasso
+    # plt.style.use("ggplot")
+    # plt.figure(figsize=set_size(345), dpi=80) 
+    # for degree in phi:
+    #     # plt.plot(np.log10(lambdas), np.log( msetrain[degree-1,:]    ) , color='green', label=f'MSE_train')#: Max_Deg={degree}')
+    #     # plt.plot(np.log10(lambdas), np.log( sklmsetrain[degree-1,:] ) , color='blue', label=f'SKL_train')#: Max_Deg={degree}')
+    #     plt.plot(np.log10(lambdas), np.log( msetest[degree-1,:]     ) , label= f'Max_Deg={degree}')   # , '--', color='red', label=f'MSE_test')
+    #     # plt.plot(np.log10(lambdas), np.log( sklmsetest[degree-1,:]  ) , '--', color='orange', label=f'SKL_test')#: Max_Deg={degree}')
+    # plt.xlabel(r"$\lambda$")
+    # plt.ylabel(r"ln(MSE)")
+    # plt.title('MSE_test; ' + title)
+    #     # plt.title(f'Deg_now={degree}; '+ title)
+    # plt.legend()
+    #     # if degree == 5:
+    #     #     plt.savefig('results/OwnCodeVsSKL/RidgeVsSKLn=5.pdf', format='pdf', bbox_inches='tight')
+    # # plt.savefig('results/Ridgestuff/mseVSlambdaForDegto10.pdf', format='pdf', bbox_inches='tight')
+    # plt.show()
+
+# def BootstrapRidgePlot()

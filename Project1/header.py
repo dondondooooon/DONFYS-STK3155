@@ -18,13 +18,12 @@ from matplotlib import cm
 from matplotlib.ticker import LinearLocator, FormatStrFormatter
 from mpl_toolkits.mplot3d import Axes3D
 from scipy.stats import norm
-# import warnings
 
 # Vanilla 1-D Data Generation
 def simple_function(x,noise,noisy):
     function_ = 7.2*x**5 + 0.5*x**2 # 2.5*np.e**-x + 0.72*x**x 
     if noisy == True:
-        return function_+0.1*noise
+        return function_+0.2*noise
     else:
         return function_
 
@@ -35,26 +34,26 @@ def FrankeFunction(x,y,noise,noisy):
     term3 = 0.5*np.exp(-(9*x-7)**2/4.0 - 0.25*((9*y-3)**2))
     term4 = -0.2*np.exp(-(9*x-4)**2 - (9*y-7)**2)
     if noisy == True:
-        return (term1+term2+term3+term4)+0.1*noise
+        return (term1+term2+term3+term4)+0.2*noise
     else:
         return term1 + term2 + term3 + term4
 
 # Generating Design Matrix
 def create_X(x,y,n):
     N = len(x)              # No. of rows in design matrix // corr. to # of inputs to outputs
-    l = int((n+1)*(n+2)/2)  # No. of elements in beta // Number of columns in design matrix // corr. to the weights
+    l = int((n+1)*(n+2)/2)  # No. of elements in beta // Number of columns in design matrix 
     # Frank Function 2D Design Matrix
     X = np.ones((N,l))      # Initialize design matrix X
     for i in range(1,n+1):  # Loop through features 1 to n (skipped 0)
         q = int((i)*(i+1)/2)    
         for k in range(i+1):
             X[:,q+k]=(x**(i-k))*y**k  # Calculate the right polynomial term
+    return X
     # # For simple 1D Function Design Matrix
     # l = n + 1 
     # X = np.ones((N,l))      # Initialize design matrix X
     # for i in range(1,n+1):  # Looping through columns 1 to n
-    #     X[:,i] = x**i #np.squeeze?
-    return X
+    #     X[:,i] = x**i
 
 '''
 ****************************************************************************************
@@ -72,9 +71,9 @@ def scale_data(xtrain,xtest,ytrain,ytest):
     scaler.fit(xtrain)
     xtrainscaled = scaler.transform(xtrain)
     xtestscaled = scaler.transform(xtest)
-    scaler.fit(ytrain)
-    ytrainscaled = scaler.transform(ytrain)
-    ytestscaled = scaler.transform(ytest)
+    scaler.fit(ytrain.reshape(-1, 1))
+    ytrainscaled = scaler.transform(ytrain.reshape(-1, 1)).ravel()
+    ytestscaled = scaler.transform(ytest.reshape(-1, 1)).ravel()
     return xtrainscaled, xtestscaled, ytrainscaled, ytestscaled
 
 # Mean Squared Error (MSE)
@@ -121,11 +120,11 @@ def OLS_learning(x,y,n,func,phi,noisy):
 
         # Splitting the Data
         X_train, X_test, y_train, y_test = train_test_split\
-          (X,func, test_size = 0.2)#, random_state=69) 
+          (X,func, test_size = 0.2, random_state=1) 
+
         # # Scale the Data
         # X_train, X_test, y_train, y_test = scale_data(X_train,X_test,y_train,y_test)
-
-
+        
         # Training 
         beta = OLSlinreg(X_train,y_train) # Calculate Beta 
         ytilde = X_train @ beta
@@ -156,27 +155,24 @@ def OLS_learning(x,y,n,func,phi,noisy):
 
 # OLS MSE bootstrap resampling 
 def OLS_boots(x,y,n,func,phi,nB):
-    # warnings.filterwarnings('ignore') # for the bias calculation
-    var = np.zeros((n,nB))
-    bias = np.zeros((n,nB))
+    var = np.zeros(n)
+    bias = np.zeros(n)
     msesamp = np.zeros((n,nB))
 
     for degree in phi:
         X = create_X(x,y,degree) # Build Design Matrix
         # Splitting the Data
         X_train, X_test, y_train, y_test = train_test_split\
-            (X,func, test_size = 0.2)
+            (X,func, test_size = 0.2, random_state=1)
         ypred = np.empty((y_test.shape[0],nB))
         for boots in range(0,nB):
             # Sample Data
             X_trboot, y_trboot = bootstraping(X_train,y_train)
             beta = OLSlinreg(X_trboot,y_trboot) # Calculate Beta
-            ypred[:,boots] = (X_test @ beta).ravel()  # Testing
-            msesamp[degree-1,boots] = MSE_func(y_test,ypred[:,boots]) # Calculate MSE
-            # msesamp[degree] = np.mean( np.mean((y_test - ypred)**2, axis=1, keepdims=True) )
-            bias[degree-1,boots] = np.mean( (y_test - np.mean(ypred, axis=1, keepdims=True))**2 )
-            var[degree-1,boots] = np.mean( np.var(ypred, axis=1, keepdims=True) )
-    # print("ferdig")
+            ypred[:,boots] = ypr = (X_test @ beta).ravel()  # Testing
+            msesamp[degree-1,boots] = MSE_func(y_test,ypr)#ypred[:,boots]) # Calculate MSE
+        bias[degree-1] = np.nanmean( (y_test - np.nanmean(ypred, axis=1, keepdims=True))**2 )
+        var[degree-1] = np.mean( np.nanvar(ypred, axis=1) )
     return msesamp,bias,var 
 
     
