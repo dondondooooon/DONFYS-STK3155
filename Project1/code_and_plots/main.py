@@ -1,5 +1,4 @@
 from header import *     # Import header file
-from plots import *       # Import 
 
 np.random.seed(2018) # Setting Random Seed constant
 
@@ -18,7 +17,7 @@ parser.add_argument('-optlam','--opt_lambda',help='Specify to execute lambda arr
 args = parser.parse_args()
 
 # Dictionaries
-DataFunc = {"simple": simple_function,"frank": FrankeFunction, 'real': RealFunction} # Output Data Function to be used
+DataFunc = {"frank": FrankeFunction, 'real': RealFunction} # Output Data Function to be used
 RegMethod = {"ols": OLSlinreg, 'ridge': Ridgelinreg, 'lasso': Lassolinreg} # Regression Method to be used
 Scaling = {"noscale": noscale, "yescale": scale_data} # To scale or not scale data 
 
@@ -198,10 +197,10 @@ else: # Call lambda dependency
           lambda_mse(lambdas)
 
 # Plotting:
-# Initial mse plots 
+# Initial mse plots:
 # ols_first(msetrain,msetest,mskltrain,mskltest,r2train,r2test,rskltrain,\
 #    rskltest,phi,False,False,title+" noise:True")
-# beta plot
+# Beta plot:
 #beta_plot(False)
 # Figure7(phi,N_boots,msetest,bmse,bbias,bbvar,title)
 # Figure8(phi,N_k,cvtest,sklcv,title) # Printout my cv vs scitkit learn cv
