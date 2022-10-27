@@ -1,28 +1,6 @@
 # legs.py
 # For all plots and prints
-
 from header import *
-from ridge import *
-"""
------------------
-"""
-# Set figure dimensions to avoid scaling in LaTeX.
-def set_size(width, fraction=1):
-    # Width of figure (in pts)
-    fig_width_pt = width * fraction
-    # Convert from pt to inches
-    inches_per_pt = 1 / 72.27
-    # Golden ratio to set aesthetic figure height # https://disq.us/p/2940ij3
-    golden_ratio = (5**.5 - 1) / 2
-    # Manual addons
-    heightadd = inches_per_pt * 45
-    widthadd = inches_per_pt * 65
-    # Figure width in inches
-    fig_width_in = fig_width_pt * inches_per_pt + widthadd
-    # Figure height in inches
-    fig_height_in = fig_width_in * golden_ratio + heightadd
-    fig_dim = (fig_width_in, fig_height_in)
-    return fig_dim
 
 # Plot the simple 1D function
 def simple1D(x,func): 
@@ -32,22 +10,6 @@ def simple1D(x,func):
     plt.title("The Function")
     plt.show() 
 
-# Plot the Franke function
-def frankee(x,y,noise,noisy):
-    x,y = np.meshgrid(x,y)
-    z = FrankeFunction(x,y,noise,noisy)
-    fig = plt.figure(figsize=set_size(345), dpi=80)
-    ax = fig.gca(projection='3d')
-    # Plot the surface.
-    surf = ax.plot_surface(x, y, z,\
-         cmap=cm.coolwarm,linewidth=0, antialiased=False)
-    ax.set_xlabel('x', linespacing=3.2)
-    ax.set_ylabel('y', linespacing=3.1)
-    ax.set_zlabel('z', linespacing=3.4)
-    # Add colorbar
-    fig.colorbar(surf, shrink=0.5)
-    # plt.savefig(f"results/FrankFunction_Noise:{noisy}.pdf", format='pdf', bbox_inches='tight')
-    plt.show()
     
 # Plot MSE and R2 as function of complexity + print MSE info
 def ols_first(MSE_train,MSE_test,MSE_sklTrain,MSE_sklTest,r2train,\
@@ -116,67 +78,80 @@ def beta_plot(noisy):
     # plt.savefig(f"results/betaplot5_noise:{noisy}.pdf", format='pdf', bbox_inches='tight')
     plt.show()
 
-# Plot OLS_boostrap results
-def bOLSplot(phi,mse,bias,var,mseols,nboot):
-    plt.plot(phi, np.log10( mseols), label='MSE_test')
-    plt.plot(phi, np.log10(  np.nanmean(mse, axis=1, keepdims=True) ) , label='MSE_samp')
-    plt.xlabel(r"\Phi")
-    plt.ylabel("log10(MSE)")
-    plt.plot(phi, np.log10( bias)  , label='Bias')
-    plt.plot(phi, np.log10( var ), label='Variance')
+def Figure7(phi,N_b,msetest,msesamp,bias,var,title):
+    plt.style.use("ggplot") 
+    plt.figure(figsize=set_size(345), dpi=80)
+    plt.plot( phi, np.log10( msetest ) , color='blue', label="MSE_test" )
+    plt.plot( phi, np.log10( np.mean(msesamp,axis=1,keepdims=True) ) , color='orange', label="MSE_bootsamp" )
+    plt.plot( phi, np.log10( bias ) , color='red', label="Bias" )
+    plt.plot( phi, np.log10( var ) , color='green', label="Variance" )
+    plt.xlabel(r"$\phi$")
+    plt.ylabel(r"log10(MSE)")
+    plt.title(title+f' N_b:{N_b}')
     plt.legend()
-    plt.title(f"n=10; N=50; N_b:{nboot}")
-    plt.savefig(f"results/olsboots.pdf", format='pdf', bbox_inches='tight')
+    # plt.savefig(f'results/olsboots.pdf', format='pdf', bbox_inches='tight')
     plt.show()
 
-    # for degree in phi:
-    #     t = mse[degree-1,:]
-    #     # print(np.mean(t))
-    #     # 200 = # of bins
-    #     # the histogram of the bootstrapped data (normalized data if density = True)
-    #     n, binsboot, patches = plt.hist(t, 50, density=True, facecolor='red', alpha=0.75)
-    #     # add a 'best fit' line  
-    #     y = norm.pdf(binsboot, np.mean(t), np.std(t))
-    #     lt = plt.plot(binsboot, y, 'b', linewidth=1)
-    #     plt.xlabel('MSE')
-    #     plt.ylabel('Frequency')
-    #     plt.grid(True)
-    #     plt.title(f"Polydeg={degree}")
-    #     plt.show()
+def Figure8(phi,N_k,cvtest,sklcv,title):
+    cvtest = np.squeeze(cvtest)
+    plt.style.use("ggplot") 
+    plt.figure(figsize=set_size(345), dpi=80)
+    plt.plot(phi, np.log10( cvtest  ), "--", color='red', label="cv_MSE")
+    plt.plot(phi, np.log10( sklcv  ), color='green', label="cv_scikit")
+    plt.xlabel(r"$\phi$")
+    plt.ylabel(r"log10(MSE)")
+    plt.title(title+f' K-Folds:{N_k}')
+    plt.legend()
+    plt.savefig(f'results/{N_k}KFOLD_'+title+'.pdf', format='pdf', bbox_inches='tight')
+    minind = np.argmin(cvtest)
+    print("deg:",minind+1)
+    print("mse:",cvtest[minind])
+    plt.show()
 
-# Plot Ridge or Lasso plot
-def RidgePlot(msetrain,msetest,sklmsetrain,sklmsetest,phi,lambdas,title):
-    # Find Index of Minimum MSE as function of polynomial and lambda
-    min_ind = np.argmin(msetest)
-    mrow, mcol = np.where(msetest == msetest.ravel()[min_ind])
-    print("The lowest MSE is found at: Row:",mrow, "and Col:", mcol)
+def Figure9(phi,bmse,cvtest):
+    bmse = np.mean( bmse,axis=1,keepdims=True )
+    plt.style.use("ggplot") 
+    plt.figure(figsize=set_size(345), dpi=80)
+    plt.plot(phi, np.log10( bmse  ), label="bt_MSE")
+    plt.plot(phi, np.log10( cvtest  ), label="cv_MSE")
+    plt.xlabel(r"$\phi$")
+    plt.ylabel(r"log10(MSE)")
+    plt.title(f'100_Boots vs. 20_K-Folds')
+    plt.legend()
+    # plt.savefig(f'results/bootsvscrossvalid.pdf', format='pdf', bbox_inches='tight')
+    plt.show()
 
-    # # Plot colormap of MSE as function of n polydegree and lambda
-    # plt.imshow(msetest, cmap=cm.coolwarm)
-    # plt.xlabel(r"$\lambda$")
-    # plt.ylabel(r"n_degree")
-    # cbar = plt.colorbar()
-    # cbar.set_label('MSE')
-    # plt.title("Test:" + title + f"; Nlambda:{len(lambdas)}")
-    # # plt.savefig('results/Ridgestuff/colormapofmsetestridge.pdf', format='pdf', bbox_inches='tight')
-    # plt.show()
+def FinalPlot(phi,cvtest,df,Nlams):
+    olscv = cvtest
+    ridgecv = np.loadtxt(f'{df}/ridge/cvtest_Nlmb{Nlams}.txt')
+    lassocv = np.loadtxt(f'{df}/lasso/cvtest_Nlmb{Nlams}.txt')
+    if df == 'frank':
+        r_opt = 38
+        l_opt = 30
+    elif df == 'real':
+        r_opt = 4
+        l_opt = 11
+    plt.style.use("ggplot")
+    plt.figure(figsize=set_size(345), dpi=80)
+    plt.plot(phi, np.log( olscv ), label="OLS")
+    plt.plot(phi, np.log( ridgecv[:,r_opt] ), label="Ridge")
+    plt.plot(phi, np.log( lassocv[:,l_opt] ), label="Lasso")
+    plt.xlabel(r"$\phi$")
+    plt.ylabel(r"log10(MSE)")
+    # plt.title(f"Regression Methods on FrankeFunction")
+    plt.title("Regression Methods on Real Terrain")
+    plt.legend()
+    # plt.savefig(f'results/FrankeAll3.pdf',format='pdf',bbox_inches='tight')
+    # plt.savefig(f'results/RealAll3.pdf',format='pdf',bbox_inches='tight')
+    if df == 'real':
+        print("MSEols:", olscv[3])
+        print("MSEridge:", ridgecv[3,r_opt])
+        print("MSElasso:", lassocv[2,l_opt])
+    elif df == 'frank':
+        print("MSEols:", olscv[2])
+        print("MSEridge:", ridgecv[5,r_opt])
+        print("MSElasso:", lassocv[2,l_opt])
+    plt.show()
+    
 
-    # # Plot MSE_Ridge or _Lasso
-    # plt.style.use("ggplot")
-    # plt.figure(figsize=set_size(345), dpi=80) 
-    # for degree in phi:
-    #     # plt.plot(np.log10(lambdas), np.log( msetrain[degree-1,:]    ) , color='green', label=f'MSE_train')#: Max_Deg={degree}')
-    #     # plt.plot(np.log10(lambdas), np.log( sklmsetrain[degree-1,:] ) , color='blue', label=f'SKL_train')#: Max_Deg={degree}')
-    #     plt.plot(np.log10(lambdas), np.log( msetest[degree-1,:]     ) , label= f'Max_Deg={degree}')   # , '--', color='red', label=f'MSE_test')
-    #     # plt.plot(np.log10(lambdas), np.log( sklmsetest[degree-1,:]  ) , '--', color='orange', label=f'SKL_test')#: Max_Deg={degree}')
-    # plt.xlabel(r"$\lambda$")
-    # plt.ylabel(r"ln(MSE)")
-    # plt.title('MSE_test; ' + title)
-    #     # plt.title(f'Deg_now={degree}; '+ title)
-    # plt.legend()
-    #     # if degree == 5:
-    #     #     plt.savefig('results/OwnCodeVsSKL/RidgeVsSKLn=5.pdf', format='pdf', bbox_inches='tight')
-    # # plt.savefig('results/Ridgestuff/mseVSlambdaForDegto10.pdf', format='pdf', bbox_inches='tight')
-    # plt.show()
 
-# def BootstrapRidgePlot()
