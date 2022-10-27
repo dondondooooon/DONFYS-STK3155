@@ -9,23 +9,27 @@ main.py
 A python script that takes in command line arguments for certain parameters in the regression analysis. One can run "python3 -h" for help with these argparses. These shorthand commandline arguments are as follows:
 
 Required arguments:
-  -df  "frank" to analyze the Franke function or "real" to analyze terrain data
-  -n   Max degree polynomial you wish model
-  -N   Max of data points
-  -scl "noscale" to not scale the data or "yescale" to scale the data
-  -reg "ols" for OLS regression, "ridge" for Ridge regression, "lasso" for Lasso regression
-  -nb  Number of bootstrap iterations
-  -nk  Number of K-folds in cross-validation
+  * -df  "frank" to analyze the Franke function or "real" to analyze terrain data
+  * -n   Max degree polynomial you wish model
+  * -N   Max of data points
+  * -scl "noscale" to not scale the data or "yescale" to scale the data
+  * -reg "ols" for OLS regression, "ridge" for Ridge regression, "lasso" for Lasso regression
+  * -nb  Number of bootstrap iterations
+  * -nk  Number of K-folds in cross-validation
+
 Optional arguments:
-  -q  Specify to have no noise in data set (just for Franke function)
-  -pr Specify to print the plot of the chosen data function
-  -optlam  Specify to have an array of lambda
+  * -q  Specify to have no noise in data set (just for Franke function)
+  * -pr Specify to print the plot of the chosen data function
+  * -optlam  Specify to have an array of lambda
 
 Run command:
 Example of build command for regression analysis on Franke function and print how the function looks like:
-  >> python3 main.py -df frank -n 10 -N 50 -scl noscale -reg ols -nb 100 -nk 20 -pr
+
+  > python3 main.py -df frank -n 10 -N 50 -scl noscale -reg ols -nb 100 -nk 20 -pr
+
 Example of build command for regression analysis on Topographic data set:
-  >> python3 main.py -df real -n 10 -N 80 -scl yescale -reg ols -nb 100 -nk 20
+
+  > python3 main.py -df real -n 10 -N 80 -scl yescale -reg ols -nb 100 -nk 20
 
 
 To print out the respective plots in the figures used in the report, simply uncomment the corresponding function in the lower part of the script (lines 201 to 208). The plots are usually saved (if the plt.savefig line is uncommented) in the folder "results"
