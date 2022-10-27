@@ -1,5 +1,3 @@
-# Project 1: An Investigation on Regression Analysis and Resampling Methods on the 2-Dimensional Franke function and a Real Topographic Dataset
-
 Article
 --------
 Contains the finished product of the project
