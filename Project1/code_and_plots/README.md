@@ -22,7 +22,8 @@ Optional arguments:
   * -pr Specify to print the plot of the chosen data function
   * -optlam  Specify to have an array of lambda
 
-Run command:
+Run command examples:
+
 Example of build command for regression analysis on Franke function and print how the function looks like:
 
   > python3 main.py -df frank -n 10 -N 50 -scl noscale -reg ols -nb 100 -nk 20 -pr
