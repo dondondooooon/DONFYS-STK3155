@@ -1,5 +1,3 @@
-# header.py
-
 # Import Library
 import sys
 import argparse

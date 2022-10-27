@@ -1,5 +1,5 @@
 from header import *     # Import header file
-from legs import *       # Import 
+from plots import *       # Import 
 
 np.random.seed(2018) # Setting Random Seed constant
 
@@ -210,9 +210,9 @@ else: # Call lambda dependency
 
 """
 # For Finding optimal lambda in ridge and lasso
-np.savetxt(f'{args.data_func}/{args.reg_method}/msetrain_Nlmb{Nlams}.txt', msetrain)
-np.savetxt(f'{args.data_func}/{args.reg_method}/msetest_Nlmb{Nlams}.txt', msetest)
-np.savetxt(f'{args.data_func}/{args.reg_method}/bmse_Nlmb{Nlams}.txt', bmse)
-np.savetxt(f'{args.data_func}/{args.reg_method}/cvtest_Nlmb{Nlams}.txt', cvtest)
-np.savetxt(f'{args.data_func}/{args.reg_method}/cvtrain_Nlmb{Nlams}.txt', cvtrain)
+np.savetxt(f'matrices/{args.data_func}/{args.reg_method}/msetrain_Nlmb{Nlams}.txt', msetrain)
+np.savetxt(f'matrices/{args.data_func}/{args.reg_method}/msetest_Nlmb{Nlams}.txt', msetest)
+np.savetxt(f'matrices/{args.data_func}/{args.reg_method}/bmse_Nlmb{Nlams}.txt', bmse)
+np.savetxt(f'matrices/{args.data_func}/{args.reg_method}/cvtest_Nlmb{Nlams}.txt', cvtest)
+np.savetxt(f'matrices/{args.data_func}/{args.reg_method}/cvtrain_Nlmb{Nlams}.txt', cvtrain)
 """

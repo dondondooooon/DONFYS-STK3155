@@ -1,15 +1,5 @@
-# legs.py
-# For all plots and prints
+# For plots and prints
 from header import *
-
-# Plot the simple 1D function
-def simple1D(x,func): 
-    plt.plot(x,func)
-    plt.xlabel("x")
-    plt.ylabel("y")
-    plt.title("The Function")
-    plt.show() 
-
     
 # Plot MSE and R2 as function of complexity + print MSE info
 def ols_first(MSE_train,MSE_test,MSE_sklTrain,MSE_sklTest,r2train,\
