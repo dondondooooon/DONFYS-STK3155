@@ -7,10 +7,13 @@ In summary, you should perform an analysis of the results for OLS and Ridge
 regression as function of the chosen learning rates, the number of mini-batches
 and epochs as well as algorithm for scaling the learning rate. 
 i.e:
-    MSE vs learning rate 
+    MSE vs different learning rates vs complexity (OLS)
+    PLOTS
     MSE vs mini batches 
-    MSE vs epochs 
-    MSE vs complexity for GD, GD w m, SGD, SGD w m 
+    MSE vs epochs with different learning rates
+    MSE vs complexity for GD, GD w m, SGD, SGD w m for Franke 
+
+    .PY 
     GD_Franke: Code for GD on Franke function w/o momentum and fixed learning rate
     GDM_Franke: Code for GD on Franke function w momentum and fixed learning rate - compare to above
     SGD_Franke: Code for SGD on Franke function w/o momentum, fixed learning rate, w epochs, mini batches 
@@ -40,7 +43,7 @@ import sys
 #initializing starter variables 
 np.random.seed(2021) #rando seed
 N = 100 #number of datapoints 
-n = 5 #max polynomial 
+n = 2 #max polynomial 
 
 #Franke function
 x = np.sort(np.random.uniform(0,1,N)) 
@@ -69,37 +72,78 @@ def set_size(width, fraction=1):
     fig_dim = (fig_width_in, fig_height_in)
     return fig_dim
 
+#mse
+def mseFunc(y_data,y_model):
+    n = np.size(y_model)
+    return np.sum((y_data-y_model)**2)/n     
 
-X = np.c_[np.ones((n,1)), x]
+
+#Design matrix 
+#N = len(x)     not needed         # No. of rows in design matrix // corr. to # of inputs to outputs
+l = int((n+1)*(n+2)/2)  # No. of elements in beta // Number of columns in design matrix 
+# Frank Function 2D Design Matrix
+# print("l", l)
+X = np.ones((N,l))      # Initialize design matrix X
+for i in range(1,n+1):  # Loop through features 1 to n (skipped 0)
+    q = int((i)*(i+1)/2)    
+    for k in range(i+1):
+        X[:,q+k]=(x**(i-k))*y**k
+
+print("X shape", X.shape)
+
 # Hessian matrix
-H = (2.0/n)* X.T @ X
+Hes_Mat = (2.0/n)* X.T @ X
+
 # Get the eigenvalues
-EigValues, EigVectors = np.linalg.eig(H)
+EigValues, EigVectors = np.linalg.eig(Hes_Mat)
 print(f"Eigenvalues of Hessian Matrix:{EigValues}")
 
-beta_linreg = np.linalg.inv(X.T @ X) @ X.T @ y
-print("Beta Linreg")
-print(beta_linreg)
-beta = np.random.randn(2,1)
+#OLS regressionn
+beta_linreg = np.linalg.inv(X.T @ X) @ X.T @ z
 
+# #Beta Linreg values
+print("Beta Linreg Shape", beta_linreg.shape)
+
+#find out what this is 
+beta = np.random.randn(6, )
+# print("X?")
+# print(X.shape)
+print("Betas shape", beta.shape)
+
+# print("z")
+# print(z)
+nu_beta = np.random.randn(6, )
+lear_rate = 0.002
+#gamma parameter - leraning rate
 eta = 1.0/np.max(EigValues)
-Niterations = 1000
+N_iterations = 1000
 
-for iter in range(Niterations):
-    gradient = (2.0/n)*X.T @ (X @ beta-y)
-    beta -= eta*gradient
-print("Betas:")
-print(beta)
+#gradient descent 
+for iter in range(N_iterations):
+    gradient = (2.0/n)*X.T @ (X @ beta-z)
+    nu_gradient = (2.0/n)*X.T @ (X @ nu_beta-z)
+    #add stopping criteria here
+    # if gradient < 10:
+    #updating beta
+    beta = beta - (eta*gradient) #()should be -learning rate * gradient
+    nu_beta = nu_beta - (lear_rate*nu_gradient)
 
-##Print Franke function 
-xmesh,ymesh = np.meshgrid(x,y)
-fig = plt.figure(figsize=set_size(345), dpi=80)
-ax = fig.gca(projection='3d')
-surf = ax.plot_surface(xmesh, ymesh, z,\
-cmap=cm.coolwarm,linewidth=0, antialiased=False) # Plot the surface.
-ax.set_xlabel('x', linespacing=3.2)
-ax.set_ylabel('y', linespacing=3.1)
-ax.set_zlabel('z', linespacing=3.4)
-fig.colorbar(surf, shrink=0.5)  # Add colorbar
-# plt.savefig(f"results/FrankFunction_Noise:True.pdf", format='pdf', bbox_inches='tight')
-plt.show()
+
+print("Betas shape v2", beta.shape)
+#design matrix specifically for ypredict
+# xnew = np.array([[0],[2]])
+# xbnew = np.c_[np.ones((2,1)), xnew]
+ypredict = X.dot(beta)
+ypredict_2 = X.dot(beta_linreg)
+ypredict_3 = X.dot(nu_beta)
+
+print("ypredict shape", ypredict.shape)
+mse_grad = mseFunc(z, ypredict)
+mse_OLS = mseFunc(z, ypredict_2)
+mse_gam = mseFunc(z, ypredict_3)
+
+print("MSE Grad: ", mse_grad)
+print("MSE OLS: ", mse_OLS)
+print("MSE Gam: ", mse_gam)
+
+#array of gammas -> grid search 
