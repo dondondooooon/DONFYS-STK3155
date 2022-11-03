@@ -46,7 +46,7 @@ if args.opt_lambda == True:
           lambdas = np.logspace(-18,1,Nlams)
 else:
      lambdas = np.array([0.0001,0.001,0.01,0.1,100])
-title = f"n:{n}; N:{N}"
+title = f"n-{n}_N-{N}"
 
 '''
 The following lines of codes are the main regression code

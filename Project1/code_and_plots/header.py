@@ -65,7 +65,7 @@ def FrankeFunction(N,noise,print):
         ax.set_ylabel('y', linespacing=3.1)
         ax.set_zlabel('z', linespacing=3.4)
         fig.colorbar(surf, shrink=0.5)  # Add colorbar
-        # plt.savefig(f"results/FrankFunction_Noise:True.pdf", format='pdf', bbox_inches='tight')
+        # plt.savefig(f"results/FrankFunction_Noise-True.pdf", format='pdf', bbox_inches='tight')
         plt.show()
 
     return x,y,z # Final function plus eventual noise
@@ -247,7 +247,7 @@ def beta_plot(noisy):
     plt.xlabel('Polynomial Variable')
     plt.ylabel(r'Beta Value $\beta$')
     plt.legend()
-    # plt.savefig(f"results/betaplot5_noise:{noisy}.pdf", format='pdf', bbox_inches='tight')
+    # plt.savefig(f"results/betaplot5_noise-{noisy}.pdf", format='pdf', bbox_inches='tight')
     plt.show()
 
 def Figure7(phi,N_b,msetest,msesamp,bias,var,title):
@@ -274,7 +274,7 @@ def Figure8(phi,N_k,cvtest,sklcv,title):
     plt.ylabel(r"log10(MSE)")
     plt.title(title+f' K-Folds:{N_k}')
     plt.legend()
-    plt.savefig(f'results/{N_k}KFOLD_'+title+'.pdf', format='pdf', bbox_inches='tight')
+    # plt.savefig(f'results/{N_k}KFOLD_'+title+'.pdf', format='pdf', bbox_inches='tight')
     minind = np.argmin(cvtest)
     print("deg:",minind+1)
     print("mse:",cvtest[minind])

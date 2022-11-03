@@ -41,8 +41,8 @@ plt.xlabel(r"$\phi$")
 plt.ylabel(r"log10(MSE)")
 plt.title(f"{reg_method[reg]}: lmb={titlelmb:.3}")    #f' lmb:{lambdas[lmb_ind]}')
 plt.legend()
-# plt.savefig(f'results/ridgelmb:{titlelmb:.2}.pdf', format='pdf', bbox_inches='tight')
-# plt.savefig(f'results/lassolmb:{titlelmb:.2}.pdf', format='pdf', bbox_inches='tight')
+# plt.savefig(f'results/ridgelmb-{titlelmb:.2}.pdf', format='pdf', bbox_inches='tight')
+# plt.savefig(f'results/lassolmb-{titlelmb:.2}.pdf', format='pdf', bbox_inches='tight')
 plt.show()
 '''
 
@@ -109,8 +109,8 @@ for i in range(len(l)):
     # plt.title(f'Lasso_lmb:{lambdas[lmb]:.3}')
     # plt.title(f'Ridge_lmb:{lambdas[lmb]:.3}')
     plt.legend()
-    # plt.savefig(f'results/lambdadep/BootsCVLassolmb:{lmb}.pdf', format='pdf', bbox_inches='tight')
-    # plt.savefig(f'results/lambdadep/BootsCVRidgelmb:{lmb}.pdf', format='pdf', bbox_inches='tight')
+    # plt.savefig(f'results/lambdadep/BootsCVLassolmb-{lmb}.pdf', format='pdf', bbox_inches='tight')
+    # plt.savefig(f'results/lambdadep/BootsCVRidgelmb-{lmb}.pdf', format='pdf', bbox_inches='tight')
     plt.show()
 '''
 
