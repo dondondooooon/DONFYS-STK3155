@@ -29,33 +29,13 @@ term2 = 0.75*np.exp(-((9*x+1)**2)/49.0 - 0.1*(9*y+1)) # Second term
 term3 = 0.5*np.exp(-(9*x-7)**2/4.0 - 0.25*((9*y-3)**2)) # Third term
 term4 = -0.2*np.exp(-(9*x-4)**2 - (9*y-7)**2) # Fourth term
 z = (term1+term2+term3+term4)
-
-
-# set size of plots - not needed yet 
-def set_size(width, fraction=1):
-    # Width of figure (in pts)
-    fig_width_pt = width * fraction
-    # Convert from pt to inches
-    inches_per_pt = 1 / 72.27
-    # Golden ratio to set aesthetic figure height # https://disq.us/p/2940ij3
-    golden_ratio = (5**.5 - 1) / 2
-    # Manual addons
-    heightadd = inches_per_pt * 45
-    widthadd = inches_per_pt * 65
-    # Figure width in inches
-    fig_width_in = fig_width_pt * inches_per_pt + widthadd
-    # Figure height in inches
-    fig_height_in = fig_width_in * golden_ratio + heightadd
-    fig_dim = (fig_width_in, fig_height_in)
-    return fig_dim
+#gotta figure out why a FUNCTION for franke function fucks up the MSE
 
 
 # mse
 def run_mse(y_data,y_model):
     n = np.size(y_model)
     return np.sum((y_data-y_model)**2)/n     
-
-
 
 
 
@@ -66,8 +46,6 @@ for i in range(1,n+1):  # Loop through features 1 to n (skipped 0)
     for k in range(i+1):
         X[:,q+k]=(x**(i-k))*y**k
 
-print("X shape", X.shape)
-
 # Hessian matrix
 Hes_Mat = (2.0/n)* X.T @ X
 
@@ -77,8 +55,6 @@ beta_linreg = np.linalg.inv(X.T @ X) @ X.T @ z
 
 #find out what this is !!!
 beta = np.random.randn(21, )
-nu_beta = np.random.randn(21, )
-
 
 # Fetch and print eigenvalues
 EigValues, EigVectors = np.linalg.eig(Hes_Mat)
@@ -95,12 +71,10 @@ N_iterations = 1000
 # gradient descent loop
 for iter in range(N_iterations):
     gradient = (2.0/n)*X.T @ (X @ beta-z)
-    nu_gradient = (2.0/n)*X.T @ (X @ nu_beta-z)
     #add stopping criteria here
     # if gradient < 10:
     #updating beta
     beta = beta - (gamma*gradient) #()should be -learning rate * gradient
-    nu_beta = nu_beta - (lear_rate*nu_gradient)
 
 
 
@@ -108,11 +82,6 @@ for iter in range(N_iterations):
 ypredict_1 = X.dot(beta)
 ypredict_2 = X.dot(beta_linreg)
 ypredict_3 = X.dot(nu_beta)
-
-# Printing shape of ypredicts
-print("ypredict1 shape", ypredict_1.shape)
-print("ypredict2 shape", ypredict_2.shape)
-print("ypredict3 shape", ypredict_3.shape)
 
 # Running MSE on these funcs
 mse_grad = run_mse(z, ypredict_1)
