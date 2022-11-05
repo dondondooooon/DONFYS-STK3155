@@ -3,6 +3,7 @@ Outline for naked OLS regression with Gradient Descent
 -on the Franke Function without noise WITH momentum 
 """
 # Importing various packages
+from numpy.random import rand
 from random import random, seed
 import numpy as np
 import matplotlib.pyplot as plt
@@ -10,17 +11,12 @@ from mpl_toolkits.mplot3d import Axes3D
 from matplotlib import cm
 from matplotlib.ticker import LinearLocator, FormatStrFormatter
 import sys
-
-# initializing starter variables 
-#rando seed
-np.random.seed(2021) 
+from numpy import asarray
+from numpy import arange
+from matplotlib import pyplot
+ 
 #number of datapoints + No. of rows in design matrix // corr. to # of inputs to outputs
 N = 100 
-#max polynomial 
-n = 5 
-# No. of elements in beta // Number of columns in design matrix 
-l = int((n+1)*(n+2)/2)  
-
 # Franke function
 x = np.sort(np.random.uniform(0,1,N)) 
 y = np.sort(np.random.uniform(0,1,N))
@@ -31,7 +27,7 @@ term3 = 0.5*np.exp(-(9*x-7)**2/4.0 - 0.25*((9*y-3)**2)) # Third term
 term4 = -0.2*np.exp(-(9*x-4)**2 - (9*y-7)**2) # Fourth term
 z = (term1+term2+term3+term4)
 #gotta figure out why a FUNCTION for franke function fucks up the MSE'
-# def franke_function(z):
+# def franke_function():
 #     term1 = 0.75*np.exp(-(0.25*(9*x-2)**2) - 0.25*((9*y-2)**2)) # First term
 #     term2 = 0.75*np.exp(-((9*x+1)**2)/49.0 - 0.1*(9*y+1)) # Second term
 #     term3 = 0.5*np.exp(-(9*x-7)**2/4.0 - 0.25*((9*y-3)**2)) # Third term
@@ -39,13 +35,69 @@ z = (term1+term2+term3+term4)
 #     z = (term1+term2+term3+term4)
 #     return z
 
+def start_func(x):
+    return x ** 2.0
+
+def deriv_func(x):
+    return x * 2.0
 
 # mse function 
 def run_mse(y_data,y_model):
     n = np.size(y_model)
     return np.sum((y_data-y_model)**2)/n     
 
+# gradient descent algo w momentum 
+def gradient_descent_m(start_func, deriv_func, bounds, n_iterations, step_size, momentum):
+	# track all solutions
+	solutions, scores = list(), list()
+	# generate an initial point
+	solution = bounds[:, 0] + rand(len(bounds)) * (bounds[:, 1] - bounds[:, 0])
+	# keep track of the change
+	change = 0.0
+	# run the gradient descent
+	for i in range(n_iterations):
+		# calculate gradient
+		gradient = deriv_func(solution)
+		# calculate update
+		new_change = step_size * gradient + momentum * change
+		# take a step
+		solution = solution - new_change
+		# save the change
+		change = new_change
+		# evaluate candidate point
+		solution_eval = start_func(solution)
+		# store solution
+		solutions.append(solution)
+		scores.append(solution_eval)
+		# report progress
+		print('>Gradient #%d f(%s) = %.5f' % (i, solution, solution_eval))
+	return [solutions, scores]
 
+# gradient descent loop
+def gradient_loop():
+    for _ in range(n_iterations):
+        global beta_gradient
+        gradient = (2.0/n)*X.T @ (X @ beta_gradient-z)
+        #add stopping criteria here
+        # if gradient < 10:
+        #updating beta
+        beta_gradient = beta_gradient - (gamma*gradient) #()should be -learning rate * gradient
+        print("Gradient Beta #", _+1, beta_gradient)
+    return beta_gradient
+
+#defining range for input -> needs to be changed
+bounds = asarray([[-1.0, 1.0]])
+
+# initializing starter variables 
+#rando seed
+np.random.seed(2021) 
+
+#max polynomial 
+n = 5 
+# No. of elements in beta // Number of columns in design matrix 
+l = int((n+1)*(n+2)/2) 
+#calling franke function 
+#franke_function()
 
 # Frank Function 2D Design Matrix X
 X = np.ones((N,l))      
@@ -74,24 +126,30 @@ EigValues, EigVectors = np.linalg.eig(Hes_Mat)
 lear_rate = 0.002
 #gamma parameter - leraning rate
 gamma = 1.0/np.max(EigValues)
-n_iterations = 1000
+n_iterations = 50
+
+#step-size
+step_size = 0.1
+#momentum
+momentum = 0.2
+solutions, scores = gradient_descent_m(start_func, deriv_func, bounds, n_iterations, step_size, momentum)
 
 
-# gradient descent loop
-def gradient_loop():
-    for _ in range(n_iterations):
-        global beta_gradient
-        gradient = (2.0/n)*X.T @ (X @ beta_gradient-z)
-        #add stopping criteria here
-        # if gradient < 10:
-        #updating beta
-        beta_gradient = beta_gradient - (gamma*gradient) #()should be -learning rate * gradient
-        print("Gradient Beta #", _+1, beta_gradient)
-    return beta_gradient
+#sample input range uniformly at 0.1 increments
+inputs = arange(bounds[0,0], bounds[0,1]+0.1, 0.1)
+# compute targets
+results = start_func(inputs)
+# create a line plot of input vs result
+pyplot.plot(inputs, results)
+# plot the solutions found
+pyplot.plot(solutions, scores, '.-', color='red')
+# show the plot
+pyplot.show()
+
+
 
 # calling gradient_loop
 gradient_loop()
-
 
 # Design matrix specifically for ypredict
 ypredict_1 = X.dot(beta_gradient)
