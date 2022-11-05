@@ -9,12 +9,21 @@ i.e:
     MSE vs complexity for GD, GD w m, SGD, SGD w m for Franke 
 
     .PY 
-    GD_Franke: Code for GD on Franke function w/o momentum and fixed learning rate - DONE 
-    GDM_Franke: Code for GD on Franke function w momentum and fixed learning rate - compare to above
-    SGD_Franke: Code for SGD on Franke function w/o momentum, fixed learning rate, w epochs, mini batches 
-    SGDM_Franke: Code for SGD on Franke function w momentum, fixed learning rate, w epochs, mini batches
-    AG_GD_Franke:  --"-- with autograd
-    AG_GDM_Franke:  --"-- with autograd
-    AG_SDG_Franke:  --"-- with autograd
-    AG_SDGM_Franke:  --"-- with autograd
-    add RMSProp and ADAM
+    GD_Franke: 
+        Code for GD on Franke function w/o momentum and fixed learning rate 
+        DONE 
+    GDM_Franke: 
+        Code for GD on Franke function w momentum and fixed learning rate - compare to above
+    SGD_Franke: 
+        Code for SGD on Franke function w/o momentum, fixed learning rate, w epochs, mini batches 
+    SGDM_Franke: 
+        Code for SGD on Franke function w momentum, fixed learning rate, w epochs, mini batches
+    AG_GD_Franke:  
+        --"-- with autograd
+    AG_GDM_Franke:  
+        --"-- with autograd
+    AG_SDG_Franke:  
+        --"-- with autograd
+    AG_SDGM_Franke:  
+        --"-- with autograd
+    add RMSProp and ADAM? WITH autograd?
