@@ -1,6 +1,6 @@
 """"
 Outline for naked OLS regression with Gradient Descent 
--on the Franke Function without noise and momentum 
+-on the Franke Function without noise WITH momentum 
 1. Imports 
 2. Initialize Franke function
 3. Set size()
@@ -144,28 +144,3 @@ print("MSE Gam: ", mse_gam)
 # MSE vs epoch? - # of times a complete dataset is passed through the algorithm  
 # ^^ vs batch - small groups of a dataset is passed through the algorithm 
 # kinda similar to the test train split
-#https://www.simplilearn.com/tutorials/machine-learning-tutorial/what-is-epoch-in-machine-learning
-
-#Expected result for 5 polynomials 
-# MSE Grad:  0.015655769782326717
-# MSE OLS:  0.0016947104282061534
-# MSE Gam:  0.01764043437456315
-
-
-# Print functions
-#Print Design matrix
-# print("X?")
-# print(X.shape)
-#Print Beta Linreg values
-# print("Beta Linreg Shape", beta_linreg.shape)
-#Print Betas shape
-# print("Betas shape", beta.shape) - before loop
-# print("Betas shape v2", beta.shape) - after loop to see the diff
-#Print whatever the fuck z is
-# print("z")
-# print(z)
-
-#Extra
-# xnew = np.array([[0],[2]]) - idk wtf this is im ngl
-# xbnew = np.c_[np.ones((2,1)), xnew] - idk wtf this is im ngl
-#array of gammas -> grid search 
