@@ -85,6 +85,36 @@ def gradient_loop():
         print("Gradient Beta #", _+1, beta_gradient)
     return beta_gradient
 
+# gradient descent loop with beta gamma
+def gradient_loop_gamma():
+    for _ in range(n_iterations):
+        global beta_gamma
+        gradient = (2.0/n)*X.T @ (X @ beta_gamma-z)
+        #add stopping criteria here
+        # if gradient < 10:
+        #updating beta
+        beta_gamma = beta_gamma - (gamma*gradient) #()should be -learning rate * gradient
+        print("Gradient Beta #", _+1, beta_gamma)
+    return beta_gamma
+
+# gradient descent loop with beta gamma AND beta_gradient -> looks like this works
+def gradient_loop_gb():
+    for _ in range(n_iterations):
+        global beta_gamma, beta_gradient
+        gradient = (2.0/n)*X.T @ (X @ beta_gamma-z)
+        #add stopping criteria here
+        # if gradient < 10:
+        #updating beta
+        beta_gamma = beta_gamma - (gamma*gradient) #()should be -learning rate * gradient
+        print("Gradient Beta #", _+1, beta_gamma)
+        gradient_beta = (2.0/n)*X.T @ (X @ beta_gradient-z)
+        #add stopping criteria here
+        # if gradient < 10:
+        #updating beta
+        beta_gradient = beta_gradient - (gamma*gradient_beta) #()should be -learning rate * gradient
+        print("Gradient Beta #", _+1, beta_gradient)
+    return beta_gamma
+
 #defining range for input -> needs to be changed
 bounds = asarray([[-1.0, 1.0]])
 
@@ -149,7 +179,9 @@ pyplot.show()
 
 
 # calling gradient_loop
-gradient_loop()
+# gradient_loop()
+# gradient_loop_gamma()
+gradient_loop_gb()
 
 # Design matrix specifically for ypredict
 ypredict_1 = X.dot(beta_gradient)
