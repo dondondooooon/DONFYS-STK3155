@@ -14,6 +14,7 @@ import sys
 from numpy import asarray
 from numpy import arange
 from matplotlib import pyplot
+from autograd import grad
  
 #number of datapoints + No. of rows in design matrix // corr. to # of inputs to outputs
 N = 100 
@@ -36,10 +37,10 @@ z = (term1+term2+term3+term4)
 #     return z
 
 def start_func(x):
-    return x ** 2.0
+    return z #<-- need to figure out a way to get z to be a single line... maybe instead of term 1-4 we just define z in one line?
 
 def deriv_func(x):
-    return x * 2.0
+    return grad(z)  #<-- need to figure out a way to get z to be a single line... maybe instead of term 1-4 we just define z in one line?
 
 # mse function 
 def run_mse(y_data,y_model):
