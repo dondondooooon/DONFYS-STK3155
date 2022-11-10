@@ -81,7 +81,7 @@ for i in range(1,n+1):  # Loop through features 1 to n (skipped 0)
     for k in range(i+1):
         X[:,q+k]=(x**(i-k))*y**k
 
-print("X shape", X.shape)
+# print("X shape", X.shape)
 
 # 7. Hessian matrix
 Hes_Mat = (2.0/n)* X.T @ X
@@ -125,9 +125,9 @@ ypredict_2 = X.dot(beta_linreg)
 ypredict_3 = X.dot(nu_beta)
 
 # 13. Printing shape of ypredicts
-print("ypredict1 shape", ypredict_1.shape)
-print("ypredict2 shape", ypredict_2.shape)
-print("ypredict3 shape", ypredict_3.shape)
+# print("ypredict1 shape", ypredict_1.shape)
+# print("ypredict2 shape", ypredict_2.shape)
+# print("ypredict3 shape", ypredict_3.shape)
 
 # 14. Running MSE on these funcs
 mse_grad = run_mse(z, ypredict_1)

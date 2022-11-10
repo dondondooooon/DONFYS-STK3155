@@ -36,11 +36,22 @@ z = (term1+term2+term3+term4)
 #     z = (term1+term2+term3+term4)
 #     return z
 
-def start_func(x):
+def start_func(x1, x2):
+    term1 = 0.75*np.exp(-(0.25*(9*x1-2)**2) - 0.25*((9*x2-2)**2)) # First term
+    term2 = 0.75*np.exp(-((9*x1+1)**2)/49.0 - 0.1*(9*x2+1)) # Second term
+    term3 = 0.5*np.exp(-(9*x1-7)**2/4.0 - 0.25*((9*x2-3)**2)) # Third term
+    term4 = -0.2*np.exp(-(9*x1-4)**2 - (9*x2-7)**2) # Fourth term
+    z = term1 + term2 + term3 + term4
     return z #<-- need to figure out a way to get z to be a single line... maybe instead of term 1-4 we just define z in one line?
 
-def deriv_func(x):
-    return grad(z)  #<-- need to figure out a way to get z to be a single line... maybe instead of term 1-4 we just define z in one line?
+def deriv_func(x1, x2):
+    term1 = 0.75*np.exp(-(0.25*(9*x1-2)**2) - 0.25*((9*x2-2)**2)) # First term
+    term2 = 0.75*np.exp(-((9*x1+1)**2)/49.0 - 0.1*(9*x2+1)) # Second term
+    term3 = 0.5*np.exp(-(9*x1-7)**2/4.0 - 0.25*((9*x2-3)**2)) # Third term
+    term4 = -0.2*np.exp(-(9*x1-4)**2 - (9*x2-7)**2) # Fourth term
+    z = term1 + term2 + term3 + term4
+    return grad(z) 
+     #<-- need to figure out a way to get z to be a single line... maybe instead of term 1-4 we just define z in one line?
 
 # mse function 
 def run_mse(y_data,y_model):
