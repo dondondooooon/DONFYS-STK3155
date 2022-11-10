@@ -26,4 +26,4 @@ i.e:
         --"-- with autograd
     AG_SDGM_Franke:  
         --"-- with autograd
-    add RMSProp and ADAM? WITH autograd?
+    add RMSProp /ADAM / autograd - OPTIMIZATION FUNCTIONS 
