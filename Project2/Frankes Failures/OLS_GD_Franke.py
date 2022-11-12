@@ -135,9 +135,10 @@ mse_OLS = run_mse(z, ypredict_2)
 mse_gam = run_mse(z, ypredict_3)
 
 # 15. Printing MSE
-print("MSE Grad: ", mse_grad)
-print("MSE OLS: ", mse_OLS)
-print("MSE Gam: ", mse_gam)
+print("\nPerforming Gradient descent without momentum on the Franke Function")
+print("Printing the MSE for 3 Betas: \nMSE Gradient\n", mse_grad)
+print("\nMSE OLS\n", mse_OLS)
+print("\nMSE Gamma\n", mse_gam, "\n")
 
 # 16. Plotting functions 
 # MSE vs complexity?

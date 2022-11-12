@@ -5,7 +5,7 @@ Outline for naked OLS regression with Gradient Descent
 # Importing various packages
 from numpy.random import rand
 from random import random, seed
-import numpy as np
+import autograd.numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib import cm
