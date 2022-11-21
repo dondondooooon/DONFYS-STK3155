@@ -1,5 +1,4 @@
-#from neuralnetwork import *
-import numpy as np
+from neuralnetwork import *
 import matplotlib.pyplot as plt
 from sklearn.model_selection import  train_test_split
 np.random.seed(0)
@@ -27,6 +26,11 @@ def create_X(x,y,n):
             X[:,q+k]=(x**(i-k))*y**k  # Calculate the right polynomial term
     return X
 
+# Mean Squared Error (MSE)
+def MSE(y_data,y_model):
+    n = np.size(y_model)
+    return np.sum((y_data-y_model)**2)/n 
+
 # Function for performing OLS regression
 def OLSlinreg(X,f):
     A = np.linalg.pinv(X.T.dot(X)) # SVD inverse
@@ -48,15 +52,20 @@ X_train, X_test, y_train, y_test = train_test_split(X,func, test_size = 0.2, ran
 beta = OLSlinreg(X_train,y_train)
 ytilde_ols = X_test @ beta
 
-print(func.shape,ytilde_ols.shape)
+# print(func.shape,ytilde_ols.shape)
+'''
+Neural Network
+'''
+epochs = 100
+NN = NeuralNetwork(X_train,y_train,n_hidden_neurons=10,n_hidden_layers=1,batch_size=5,eta=0.1,\
+    lmbd=0.0,gamma=0.0,cost="mse",activation="sigmoid",score="mse",output_activation=None)
+NN.SGD_train(epochs)
+ypred = NN.predict(X_test)
 
-# NN = NeuralNetwork(X_train,y_train,n_hidden_neurons=10,n_categories=10,epochs=10,batch_size=5,eta=0.1,lmbd=0.0)
-# NN.SGD_train()
-# ind,predict,que = NN.predict(X_test)
-# print(predict.shape)
-# # print(y_test.shape)
-# print(predict)
-# print(y_test)
-# print(que.shape)
+print(ypred.shape)
+print(y_test.shape)
+print(MSE(y_test,ypred))
+for i in range(len(NN.epoch_evo)):
+    print(NN.epoch_evo[i])
 
-# print(ind)
+

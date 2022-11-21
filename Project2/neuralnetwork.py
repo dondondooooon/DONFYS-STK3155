@@ -1,4 +1,4 @@
-import numpy as np
+import autograd.numpy as np
 from autograd import elementwise_grad
 
 # Set rng seed
@@ -38,6 +38,8 @@ class NeuralNetwork:
         self.batch_size = batch_size
         self.minibatch_size = self.n_inputs // self.batch_size
         self.init_eta = eta
+        self.t0 = 1.0
+        self.t1 = self.t0 / self.init_eta
         self.lmbd = lmbd
         self.gamma = gamma
         self.tol = 1e-8
@@ -50,8 +52,8 @@ class NeuralNetwork:
 
         # Create Hidden Layers, Weights, and Biases
         self.init_layers_and_error()
-        self.create_biases_and_weights()
-        self.init_memory_and_ADAM_momentum()
+        self.init_biases_and_weights()
+        self.init_memory()
 
         # Initialize important mathematical functions
         self.cost = Cost_func[cost]
@@ -73,7 +75,7 @@ class NeuralNetwork:
     def init_layers_and_error(self): 
         # z_l: weighted sum / unactivated values of all nodes 
         self.z_l = [np.zeros((self.n_inputs,self.n_hidden_neurons))\
-            for i in range(self.hidden_layers)]
+            for i in range(self.n_hidden_layers)]
         # insert input & output layer
         self.z_l.insert(0,self.X_data_full.copy())
         self.z_l.append(np.zeros(np.shape(self.target)))
@@ -83,12 +85,9 @@ class NeuralNetwork:
         self.d_l = self.z_l.copy()
         self.d_l[0] = np.nan # does not include input layer
 
-    def init_biases_and_weights(self):
-        '''
-        might have to fix indexing by putting nan on first index in the list
-        '''
+    def init_biases_and_weights(self): 
         # weights between hidden layers
-        self.weights = [np.random.randn(self.n_hidden_neurons, self.n_hidden_neurons)\\
+        self.weights = [np.random.randn(self.n_hidden_neurons, self.n_hidden_neurons)\
             for i in range(self.n_hidden_layers-1)]
         # weight between input layer and first hidden layer
         self.weights.insert(0,np.random.randn(self.n_features,self.n_hidden_neurons))
@@ -96,44 +95,34 @@ class NeuralNetwork:
         self.weights.append(np.random.randn(self.n_hidden_neurons,self.n_categories))
         
         # bias between input layer and 1st hidden layers & between hidden layers
-        self.bias = [np.zeros(self.n_hidden_neurons)+0.01\\
+        self.bias = [np.zeros(self.n_hidden_neurons)+0.01\
             for i in range(self.n_hidden_layers)]
         # bias between last hidden layer and output layer 
         self.bias.append(np.zeros(self.n_categories)+0.01)
 
-    def init_memory_and_ADAM_moment(self): 
-        # previous step for momentum/memory  
+    def init_memory(self):  # previous step for momentum/memory 
         self.prev_weights, self.prev_bias = [],[]
-        # initialize first and second moment for ADAM optimizer
-        self.m_weights, self.v_weights = [], []
-        self.m_bias, self.v_bias = [], []
-        for i in range(self.Ltot):
+        for i in range(self.Ltot-1):
             self.prev_weights.append(np.zeros(np.shape(self.weights[i])))
             self.prev_bias.append(np.zeros(np.shape(self.bias[i])))
-            self.m_weights.append(np.zeros(np.shape(self.weights[i])))
-            self.v_weights.append(np.zeros(np.shape(self.weights[i])))
-            self.m_bias.append(np.zeros(np.shape(self.bias[i])))
-            self.v_bias.append(np.zeros(np.shape(self.bias[i])))
 
     def feed_forward(self): # feed-forward step
         for i in range(0,self.Ltot-1):
             # weighted sum of inputs to the hidden layer
             new_z = np.matmul(self.a_l[i],self.weights[i]) + self.bias[i]
-            self.z_l[i] = new_z # update z_l
-            self.a_l[i] = self.activs[i](new_z) # activation in z_l
+            self.z_l[i+1] = new_z # update z_l
+            self.a_l[i+1] = self.activs[i](new_z) # activation in z_l
 
     def backpropagation(self): # back-prop step
         # error in the output layer
         self.d_l[-1] = self.output_der_act(self.z_l[-1]) * self.der_cost(self.a_l[-1])
         # back propagate error for other layers
         for i in reversed(range(1,self.Ltot-1)):
-            self.d_l[i] = np.matmul(self.d_l[i+1][:,np.newaxis],self.weights[i].T) * self.der_act(self.z_l[i])
+            self.d_l[i] = np.matmul(self.d_l[i+1],self.weights[i].T) * self.der_act(self.z_l[i])
         
-    def param_update(self):
-        self.backpropagation()
-        # convergence check 
-        self.grad_conv = np.linalg.norm(self.d_l[-1] * self.eta)
-        if self.grad_conv > self.tol and np.isfinite(self.grad_conv):
+        # check for vanish / exploding gradients 
+        self.grad_prob = np.linalg.norm(self.d_l[-1] * self.eta)
+        if self.grad_prob > self.tol and np.isfinite(self.grad_prob):
             # update parameters
             for i in range(0,self.Ltot-1):
                 self.memo_weights = self.gamma * self.prev_weights[i]
@@ -145,9 +134,6 @@ class NeuralNetwork:
                 self.memo_bias = self.gamma * self.prev_bias[i]
                 self.bias_grad = self.eta * np.mean(self.d_l[i+1], axis=0)
 
-                # Compute Moments
-                self.m0 = beta1 * self.m0 + (1 - beta1) * self.weights_grad
-
                 # update weights and biases
                 self.weights[i] -= self.memo_weights + self.weights_grad
                 self.bias[i] -= self.memo_bias + self.bias_grad
@@ -155,50 +141,45 @@ class NeuralNetwork:
     def predict(self, X):
         self.a_l[0] = X
         self.feed_forward()
-        return self.activs[-1](self.z_l(-1))
+        return self.activs[-1](self.z_l[-1])
 
     def SGD_train(self,epochs):
         epoch = 0
-        itera = 0
-        # Exponential Decay rates for the Moment Estimates
-        self.beta1 = 0.9
-        self.beta2 = 0.999
-        # Gradient Conversion Initialization
-        self.grad_conv = 1
-        # Initialize Learning Rate
-        self.eta = self.init_eta
-        # Initialize First and Second Moment Vector
-
-        np.zeros()
-        m_0, v_0 = 0.0, 0.0 
-
+        self.grad_prob = 1.0
         self.escore = np.zeros((epochs+1,self.score_shape))
         self.escore[0] = self.score(self.X_data_full,self.init_target)
-        self.epoch_print(epoch, self.escore[0])
-        while (epoch < epochs and self.grad_conv > self.tol and np.isfinite(self.grad_conv)):
-            fst_mom, sec_mom = 0.0, 0.0 # first and second moment
-            itera += 1
-            for k in range(self.minibatch_size):
-            # pick datapoints with replacement
+        self.epoch_evo = [self.escore.copy() for e in range(epochs+1)]
+        self.epoch_evo[0] = self.epoch_print(epoch, self.escore[0])
+
+        while (epoch < epochs and self.grad_prob > self.tol and np.isfinite(self.grad_prob)):
+            for i in range(self.minibatch_size):
+                # set learning rate
+                self.eta_schedule(epoch,i)
+                # pick datapoints with replacement
                 chosen_datapoints = np.random.choice(self.n_inputs, size=self.batch_size, replace=False)
                 # minibatch training data
                 self.a_l[0] = self.X_data_full[chosen_datapoints]
-                self.t = self.init_target[chosen_datapoints]
+                self.target = self.init_target[chosen_datapoints]
                 self.feed_forward()
-                self.param_update()
+                self.backpropagation()
+            epoch += 1
+            self.escore[epoch] = self.score(self.X_data_full,self.init_target)
+            self.epoch_evo[epoch] = self.epoch_print(epoch, self.escore[epoch])
 
-    # Eta function / Scheduler
-    def eta_schedule(self, epoch):
-        self.eta = 
+    # Learning Rate Scheduler
+    def eta_schedule(self, epoch, i_batch):
+        t = epoch * self.minibatch_size * i_batch
+        self.eta = self.t0 / (t + self.t1)
 
     def epoch_print(self, epoch, escore):
-        print(f"Epoch: {epoch}; {self.score_name.upper()} = {escore}")
+        return (f"Epoch: {epoch}; {self.score_name.upper()}_Score = {escore}")
 
     '''
     Activation Functions
     '''
     def Sigmoid(self, val):
-        return 1.0/(1.0 + np.exp(-val))
+        vexp = np.exp(-val)
+        return 1.0/(1.0 + vexp)
 
     def Soft_Max(self, val):
         vexp = np.exp(val)
