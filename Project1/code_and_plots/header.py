@@ -150,7 +150,7 @@ def MSE_func(y_data,y_model):
 
 # R2 Score
 def R2(y_data, y_model):
-    return 1-np.sum( (y_data.ravel() - y_model.ravel())**2) / np.sum( (y_data.ravel() - np.mean(y_data)) ** 2 )
+    return 1-np.sum( (y_data - y_model.ravel())**2) / np.sum( (y_data - np.mean(y_data)) ** 2 )
 
 # No Data Scale
 def noscale(xtrain,xtest,ytrain,ytest):

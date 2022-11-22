@@ -146,16 +146,16 @@ Saving Matrices
 '''
 Final Comparison
 '''
-epochs = 100
+epochs = 300
 # optimal OLS
-nnols = NeuralNetwork(X_train,y_train,n_hidden_neurons=1,n_hidden_layers=86,batch_size=batch_size,\
+nnols = NeuralNetwork(X_train,y_train,n_hidden_neurons=86,n_hidden_layers=1,batch_size=batch_size,\
     eta=etas[3],lmbd=0.0,gamma=gammas[1],cost="mse",activation="sigmoid",score="mse",output_activation=None)
 # train network
 nnols.SGD_train(epochs)
 ypred_nn_ols = nnols.predict(X_test)
 
 # optimal Ridge
-nnridge = NeuralNetwork(X_train,y_train,n_hidden_neurons=1,n_hidden_layers=86,batch_size=batch_size,\
+nnridge = NeuralNetwork(X_train,y_train,n_hidden_neurons=86,n_hidden_layers=1,batch_size=batch_size,\
     eta=etas[3],lmbd=lambdas[1],gamma=gammas[1],cost="mse",activation="sigmoid",score="mse",output_activation=None)
 # train network
 nnridge.SGD_train(epochs)
