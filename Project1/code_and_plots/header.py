@@ -146,11 +146,11 @@ def Lassolinreg(X,f,lmb):
 # Mean Squared Error (MSE)
 def MSE_func(y_data,y_model):
     n = np.size(y_model)
-    return np.sum((y_data-y_model)**2)/n 
+    return np.sum((y_data.ravel()-y_model.ravel())**2)/n 
 
 # R2 Score
 def R2(y_data, y_model):
-    return 1-np.sum( (y_data - y_model)**2) / np.sum( (y_data - np.mean(y_data)) ** 2 )
+    return 1-np.sum( (y_data.ravel() - y_model.ravel())**2) / np.sum( (y_data.ravel() - np.mean(y_data)) ** 2 )
 
 # No Data Scale
 def noscale(xtrain,xtest,ytrain,ytest):

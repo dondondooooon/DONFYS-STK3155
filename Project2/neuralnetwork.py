@@ -20,12 +20,14 @@ class NeuralNetwork:
             score='mse',
             output_activation=None):
 
-        self.X_data_full = X_data # shape: N x features
-        self.target = Y_data # shape: N x 1
-        self.init_target = self.target
+        # data set
+        self.X_data_full = X_data 
         self.n_inputs = X_data.shape[0]
         self.n_features = X_data.shape[1]
+        self.target = Y_data 
+        self.init_target = self.target 
 
+        # network parameters
         self.n_hidden_neurons = n_hidden_neurons
         self.n_hidden_layers = n_hidden_layers
         self.Ltot = self.n_hidden_layers + 2 
@@ -34,7 +36,9 @@ class NeuralNetwork:
         else:
             self.n_categories = self.target.shape[1]
         self.n_output_neurons = self.n_categories
+        self.w_scaled = [1,1,1]
         
+        # SGD parameters
         self.batch_size = batch_size
         self.minibatch_size = self.n_inputs // self.batch_size
         self.init_eta = eta
@@ -44,34 +48,44 @@ class NeuralNetwork:
         self.gamma = gamma
         self.tol = 1e-8
 
-        # Dictionaries
+        # dictionaries
         Cost_func = {"mse": self.Cost_MSE, "ce": self.Cross_Entropy}
-        Activation_func = {"sigmoid": self.Sigmoid, "softmax": self.Soft_Max}
+        Activation_func = {"sigmoid": self.Sigmoid, "relu": self.RELU,\
+            "leaky": self.Leaky_RELU, "softmax": self.Soft_Max}
         Score_func = {"mse": self.Score_MSE, "r2": self.R2,\
             "prob": self.Prob_Score, "accuracy": self.Acc_Score}
 
-        # Create Hidden Layers, Weights, and Biases
+        # create hidden layers, weights, and biases
         self.init_layers_and_error()
         self.init_biases_and_weights()
         self.init_memory()
 
-        # Initialize important mathematical functions
-        self.cost = Cost_func[cost]
-        self.activs = [Activation_func[activation] for i in range(self.Ltot)]
+        # initialize important mathematical functions
+        self.cost = Cost_func[cost] 
         self.der_cost = elementwise_grad(self.cost)
+        self.activs = [Activation_func[activation] for i in range(self.Ltot)]
         self.der_act = elementwise_grad(self.activs[0])
         if output_activation != None:
             self.activs[-1] = Activation_func(output_activation)
         self.output_der_act = elementwise_grad(self.activs[-1])
+        
+        # initialize scaled weights if any
+        if activation == "relu" or activation == "leaky":
+            ri, ci = np.shape(self.weights[0])
+            rh, ch = np.shape(self.weights[1])
+            ro, co = np.shape(self.weights[-1])
+            self.w_scaled = [ri * ci, rh * ch, ro * co]
+
+        # initialize score params
         self.score_name = score
         self.score = Score_func[self.score_name]
         self.score_shape = 1
         if score == "accuracy":
             self.score_shape = self.n_categories
 
-
-
-
+    '''
+    Class Functions
+    '''
     def init_layers_and_error(self): 
         # z_l: weighted sum / unactivated values of all nodes 
         self.z_l = [np.zeros((self.n_inputs,self.n_hidden_neurons))\
@@ -87,12 +101,14 @@ class NeuralNetwork:
 
     def init_biases_and_weights(self): 
         # weights between hidden layers
-        self.weights = [np.random.randn(self.n_hidden_neurons, self.n_hidden_neurons)\
-            for i in range(self.n_hidden_layers-1)]
+        self.weights = [np.random.randn(self.n_hidden_neurons, self.n_hidden_neurons)/\
+            (self.w_scaled[1]) for i in range(self.n_hidden_layers-1)]
         # weight between input layer and first hidden layer
-        self.weights.insert(0,np.random.randn(self.n_features,self.n_hidden_neurons))
+        self.weights.insert(0,np.random.randn(self.n_features,self.n_hidden_neurons)/\
+            (self.w_scaled[0]))
         # weight between last hidden layer and output layer
-        self.weights.append(np.random.randn(self.n_hidden_neurons,self.n_categories))
+        self.weights.append(np.random.randn(self.n_hidden_neurons,self.n_categories)/\
+            (self.w_scaled[2]))
         
         # bias between input layer and 1st hidden layers & between hidden layers
         self.bias = [np.zeros(self.n_hidden_neurons)+0.01\
@@ -166,20 +182,18 @@ class NeuralNetwork:
             self.escore[epoch] = self.score(self.X_data_full,self.init_target)
             self.epoch_evo[epoch] = self.epoch_print(epoch, self.escore[epoch])
 
-    # Learning Rate Scheduler
-    def eta_schedule(self, epoch, i_batch):
-        t = epoch * self.minibatch_size * i_batch
-        self.eta = self.t0 / (t + self.t1)
-
-    def epoch_print(self, epoch, escore):
-        return (f"Epoch: {epoch}; {self.score_name.upper()}_Score = {escore}")
-
     '''
     Activation Functions
     '''
     def Sigmoid(self, val):
         vexp = np.exp(-val)
         return 1.0/(1.0 + vexp)
+    
+    def RELU(self, val):
+        return np.where(val > 0, val, 0)
+
+    def Leaky_RELU(self, val):
+        return np.where(val > 0, val, 0.01 * val)
 
     def Soft_Max(self, val):
         vexp = np.exp(val)
@@ -200,7 +214,7 @@ class NeuralNetwork:
     '''
     def Score_MSE(self, X, target):
         predict = self.predict(X)
-        return np.mean((predict - target) ** 2)
+        return np.mean( (predict.ravel() - target.ravel()) ** 2)
     
     def R2(self, X, target):
         ypredict = self.predict(X)
@@ -220,3 +234,16 @@ class NeuralNetwork:
         hits = np.sum(np.around(predict) == target, axis=0)
         total = target.shape[0]
         return hits/total
+
+    '''
+    Learning Rate Scheduler
+    '''
+    def eta_schedule(self, epoch, i_batch):
+        t = epoch * self.minibatch_size * i_batch
+        self.eta = self.t0 / (t + self.t1)
+
+    '''
+    Miscellaneous
+    '''
+    def epoch_print(self, epoch, escore):
+        return (f"Epoch: {epoch}; {self.score_name.upper()}_Score = {escore}")
