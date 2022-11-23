@@ -1,16 +1,29 @@
-header.py ---> contains all the imports & main functions and algorithms
+# Project 2: An Investigation on Classification and Regression Analysis, from Linear and Logistic Regression to Neural Networks
 
-body.py ---> is the main body of code that calls the fuctions 
+results
+--------
+Here you will find the plots for the results
 
-legs.py ---> for plotting purposes
+saved_txt
+--------
+Here lies the .txt files for the exported files of the matrices for grid searching
 
-Reg.py ---> Ridge and OLS testing on simple function 
+neuralnetwork.py
+--------
+Here is the class NeuralNetwork defined.
 
-RegFFNN.py ---> Feed-Forward Neural network on regression 
+franke_nn.py
+--------
+A python script that initializes the Franke function data set and uses the NeuralNetwork class to perform linear regression. This file also (if uncommented) optionally exports .txt files to be used for plotting the heatmaps for grid searches for the optimal parameters.
 
-ClassFFNN.py ---> Feed-Forward Neural network on classification
+heatmap.py
+--------
+This is the script used to plot the heatmaps for grid searching.
 
-LogReg.py ---> Logistic regression code 
+plain_GD.py
+--------
+Script for plain gradient descent algorithm
 
-
-p.s. the names will be changed to a more suitable convention on a later time hehe
+momentum_GD.py
+--------
+Script for gradient descent with momentum algorithm
