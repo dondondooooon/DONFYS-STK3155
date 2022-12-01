@@ -9,6 +9,8 @@ class NeuralNetwork:
             self,
             X_data,
             Y_data,
+            xtest,
+            ytest,
             n_hidden_neurons=20,
             n_hidden_layers=1,
             batch_size=5,
@@ -18,6 +20,10 @@ class NeuralNetwork:
             activation="sigmoid",
             score='mse',
             output_activation=None):
+
+        # test data
+        self.xtest = xtest
+        self.testtarget = ytest
 
         # data set
         self.X_data_full = X_data 
@@ -47,7 +53,7 @@ class NeuralNetwork:
         self.tol = 1e-8
         self.b1 = 0.9
         self.b2 = 0.999
-        self.delta = 1e-7
+        self.delta = 1e-5
 
         # dictionaries
         Cost_func = {"mse": self.Cost_MSE, "ce": self.Cross_Entropy}
@@ -119,8 +125,8 @@ class NeuralNetwork:
     def init_moments(self):  # initialize moments for ADAM
         self.first_moment_weights, self.first_moment_bias = [],[]
         for i in range(self.Ltot-1):
-            self.first_moment_weights.append(np.zeros(np.shape(self.weights[i])))
-            self.first_moment_bias.append(np.zeros(np.shape(self.bias[i])))
+            self.first_moment_weights.append(np.zeros(np.shape(self.weights[i]),float))
+            self.first_moment_bias.append(np.zeros(np.shape(self.bias[i]),float))
         self.second_moment_weights = self.first_moment_weights.copy()
         self.second_moment_bias = self.first_moment_bias.copy()
 
@@ -137,7 +143,6 @@ class NeuralNetwork:
         # back propagate error for other layers
         for i in reversed(range(1,self.Ltot-1)):
             self.d_l[i] = np.matmul(self.d_l[i+1],self.weights[i].T) * self.der_act(self.z_l[i])
-        
         # check for vanish / exploding gradients 
         self.grad_prob = np.linalg.norm(self.d_l[-1] * self.eta)
         if self.grad_prob > self.tol and np.isfinite(self.grad_prob):
@@ -152,17 +157,19 @@ class NeuralNetwork:
                     (1-self.b1) * self.weights_grad
                 self.second_moment_weights[i] = self.b2 * self.second_moment_weights[i] +\
                     (1-self.b2) * self.weights_grad * self.weights_grad
-                self.first_moment_bias[i] = self.b1 * self.first_moment_bias[i] +\
-                    (1-self.b1) * self.bias_grad
-                self.second_moment_bias[i] = self.b2 * self.second_moment_bias[i] +\
-                    (1-self.b2) * self.bias_grad
-                first_term_w = self.first_moment_weights[i] / (1.0-self.b1**self.iter)
+                # self.first_moment_bias[i] = self.b1 * self.first_moment_bias[i] +\
+                #     (1-self.b1) * self.bias_grad
+                # self.second_moment_bias[i] = self.b2 * self.second_moment_bias[i] +\
+                #     (1-self.b2) * self.bias_grad
+                first_term_w = self.first_moment_weights[i] / (1.0-self.b1**self.iter) 
                 second_term_w = self.second_moment_weights[i] / (1.0-self.b2**self.iter)
-                first_term_b = self.first_moment_bias[i] / (1.0-self.b1**self.iter)
-                second_term_b = self.first_moment_bias[i] / (1.0-self.b2**self.iter)
+                # first_term_b = self.first_moment_bias[i] / (1.0-self.b1**self.iter) 
+                # second_term_b = self.second_moment_bias[i] / (1.0-self.b2**self.iter) # i get nans here when i sqrt
+                # print(second_term_b)
+                # print(np.sqrt(second_term_b))
                 # update weights and biases
                 self.weights[i] -= self.eta * first_term_w / (np.sqrt(second_term_w) + self.delta)
-                self.bias[i] -= self.eta * first_term_b / (np.sqrt(second_term_b) + self.delta)
+                self.bias[i] -= self.eta * self.bias_grad # self.eta * first_term_b / (np.sqrt(second_term_b) + self.delta)
 
     def predict(self, X):
         self.a_l[0] = X
@@ -174,6 +181,10 @@ class NeuralNetwork:
         self.iter = 0
         self.grad_prob = 1.0
         self.escore = np.zeros((epochs+1,self.score_shape))
+
+        self.testscore = self.escore.copy()
+        self.testscore[0] = self.score(self.xtest,self.testtarget)
+
         self.escore[0] = self.score(self.X_data_full,self.init_target)
         self.epoch_evo = [self.escore.copy() for e in range(epochs+1)]
         self.epoch_evo[0] = self.epoch_print(epoch, self.escore[0])
@@ -195,6 +206,8 @@ class NeuralNetwork:
             epoch += 1
             self.escore[epoch] = self.score(self.X_data_full,self.init_target)
             self.epoch_evo[epoch] = self.epoch_print(epoch, self.escore[epoch])
+            
+            self.testscore[epoch] = self.score(self.xtest,self.testtarget)
 
     '''
     Activation Functions
