@@ -45,7 +45,7 @@ init_hlayers =
 batch_size = 
 etas =
 lambdas = 
-scoring = 'prob' # or 'accuracy'
+scoring = 'accuracy' # or 'prob'
 
 
 
@@ -55,7 +55,7 @@ FFFN initializiation example
 FFNN = NeuralNetwork(xtrain,ytrain,xtest=xtest,ytest=ytest,\
                     n_hidden_neurons=init_neurons,n_hidden_layers=init_hlayers,\
                     batch_size=batch_size,eta=0.001,lmbd=0.0,\
-                    cost='ce',activation='sigmoid',score=scoring,output_activation=None)
+                    cost='ce',activation='sigmoid',score=scoring,output_activation='softmax')
 
 # train Network
 FFNN.SGD_train(epochs)

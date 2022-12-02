@@ -8,6 +8,29 @@ import matplotlib.pyplot as plt
 from matplotlib import ticker as mtick
 from sklearn.model_selection import  train_test_split
 
+'''
+Keras imports
+'''
+from tensorflow.keras.layers import Input
+from tensorflow.keras.models import Sequential      #This allows appending layers to existing models
+from tensorflow.keras.layers import Dense           #This allows defining the characteristics of a particular layer
+from tensorflow.keras import optimizers             #This allows using whichever optimiser we want (sgd,adam,RMSprop)
+from tensorflow.keras import regularizers           #This allows using whichever regularizer we want (l1,l2,l1_l2)
+from tensorflow.keras.utils import to_categorical   #This allows using categorical cross entropy as the cost function
+
+def Keras_Neural_Network(arr_n_neurons,n_categories,eta,lmbd):
+    model = Sequential()
+    for i in range(len(arr_n_neurons)):
+        model.add(Dense(arr_n_neurons[i],activation='sigmoid',kernel_regularizer=regularizers.l2(lmbd)))
+    model.add(Dense(n_categories),activation=None)
+
+    sgd = optimiziers.SGD(lr=eta)
+    model.compile(loss='categorical_crossentropy',optimizer=sgd,metrics=['accuracy'])
+
+    return model
+
+
+
 np.random.seed(2022)
 sns.set()
 
