@@ -53,7 +53,7 @@ class NeuralNetwork:
         self.tol = 1e-8
         self.b1 = 0.9
         self.b2 = 0.999
-        self.delta = 1e-5
+        self.delta = 1e-7
 
         # dictionaries
         Cost_func = {"mse": self.Cost_MSE, "ce": self.Cross_Entropy}
