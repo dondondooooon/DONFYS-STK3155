@@ -28,7 +28,7 @@ lambdas = etas.copy()
 
 NN = NeuralNetwork(X_train,y_train,n_hidden_neurons=init_neurons,n_hidden_layers=hlayers,batch_size=batch_size,\
     eta=0.01,lmbd=0.0,cost='mse',activation='sigmoid',score='mse',output_activation=None,xtest=X_test,ytest=y_test)
-NN.SGD_train(1000)
+NN.SGD_train(1)
 ypred = NN.predict(X_test)
 print("\n\nPrediction:", ypred.ravel())
 print("\nTarget:",y_test)

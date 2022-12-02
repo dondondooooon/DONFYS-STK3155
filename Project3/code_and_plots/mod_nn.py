@@ -21,11 +21,11 @@ class NeuralNetwork:
             score='mse',
             output_activation=None):
 
-        # test data
+        # test data set
         self.xtest = xtest
         self.testtarget = ytest
 
-        # data set
+        # train data set
         self.X_data_full = X_data 
         self.n_inputs = X_data.shape[0]
         self.n_features = X_data.shape[1]
@@ -148,28 +148,33 @@ class NeuralNetwork:
         if self.grad_prob > self.tol and np.isfinite(self.grad_prob):
             # update parameters
             for i in range(0,self.Ltot-1):
+                '''
+                weights
+                '''
                 self.weights_grad = np.matmul(self.d_l[i+1].T,self.a_l[i]).T
                 if self.lmbd > 0.0: # regularization term gradients
                     self.weights_grad += self.lmbd * self.weights[i]
-                self.bias_grad = np.mean(self.d_l[i+1], axis=0)
                 # computing moments
                 self.first_moment_weights[i] = self.b1 * self.first_moment_weights[i] +\
                     (1-self.b1) * self.weights_grad
                 self.second_moment_weights[i] = self.b2 * self.second_moment_weights[i] +\
                     (1-self.b2) * self.weights_grad * self.weights_grad
-                # self.first_moment_bias[i] = self.b1 * self.first_moment_bias[i] +\
-                #     (1-self.b1) * self.bias_grad
-                # self.second_moment_bias[i] = self.b2 * self.second_moment_bias[i] +\
-                #     (1-self.b2) * self.bias_grad
                 first_term_w = self.first_moment_weights[i] / (1.0-self.b1**self.iter) 
                 second_term_w = self.second_moment_weights[i] / (1.0-self.b2**self.iter)
-                # first_term_b = self.first_moment_bias[i] / (1.0-self.b1**self.iter) 
-                # second_term_b = self.second_moment_bias[i] / (1.0-self.b2**self.iter) # i get nans here when i sqrt
-                # print(second_term_b)
-                # print(np.sqrt(second_term_b))
-                # update weights and biases
+                # update weights
                 self.weights[i] -= self.eta * first_term_w / (np.sqrt(second_term_w) + self.delta)
-                self.bias[i] -= self.eta * self.bias_grad # self.eta * first_term_b / (np.sqrt(second_term_b) + self.delta)
+                '''
+                biases
+                '''
+                self.bias_grad = np.mean(self.d_l[i+1], axis=0)
+                self.first_moment_bias[i] = self.b1 * self.first_moment_bias[i] +\
+                    (1-self.b1) * self.bias_grad
+                self.second_moment_bias[i] = self.b2 * self.second_moment_bias[i] +\
+                    (1-self.b2) * self.bias_grad * self.bias_grad
+                first_term_b = self.first_moment_bias[i] / (1.0-self.b1**self.iter) 
+                second_term_b = self.second_moment_bias[i] / (1.0-self.b2**self.iter)
+                # update biases 
+                self.bias[i] -= self.eta * first_term_b / (np.sqrt(second_term_b) + self.delta)
 
     def predict(self, X):
         self.a_l[0] = X
@@ -192,7 +197,7 @@ class NeuralNetwork:
         while (epoch < epochs and self.grad_prob > self.tol and np.isfinite(self.grad_prob)):
             # Initialize first and second moments
             self.init_moments()
-            self.iter = self.iter + 1
+            self.iter += 1
             for i in range(self.minibatch_size):
                 # set learning rate
                 self.eta_schedule(epoch,i)
