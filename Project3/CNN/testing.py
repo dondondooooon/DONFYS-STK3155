@@ -1,40 +1,42 @@
+# Import necessary libraries
 import tensorflow as tf
-from tensorflow import keras
+import random
 import matplotlib.pyplot as plt
-import numpy as np
-import tensorflow_datasets as tfds
 
+# Download and preprocess the ChestX-ray14 dataset
+# (This may involve resizing and normalizing the images,
+# as well as splitting the dataset into training and validation sets)
+(X_train, y_train), (X_test, y_test) = tf.keras.datasets.chestxray14.load_data()
 
-# Load the CheXpert dataset
-(X_train, y_train), (X_test, y_test) = tfds.load("chexpert", split=["train", "test"])
+# Define the architecture of the neural network
+model = tf.keras.models.Sequential([
+    tf.keras.layers.Flatten(input_shape=(32, 32, 1)),
+    tf.keras.layers.Dense(128, activation='relu'),
+    tf.keras.layers.Dropout(0.2),
+    tf.keras.layers.Dense(14, activation='softmax')
+])
 
+# Compile the model
+model.compile(optimizer='adam',
+              loss='sparse_categorical_crossentropy',
+              metrics=['accuracy'])
 
-# Preprocess the data
-X_train = X_train.astype(np.float32) / 255.0
-X_test = X_test.astype(np.float32) / 255.0
+# Train the model on the preprocessed ChestX-ray14 dataset
+model.fit(X_train, y_train, epochs=10)
 
-# Flatten the data into a one-dimensional array
-X_train = np.reshape(X_train, (X_train.shape[0], -1))
-X_test = np.reshape(X_test, (X_test.shape[0], -1))
+# Evaluate the model on the test set
+model.evaluate(X_test, y_test)
 
-# Choose 5 random images from the dataset
-num_images = 5
-random_indices = np.random.choice(X_train.shape[0], size=num_images, replace=False)
-random_images = X_train[random_indices]
-random_labels = y_train[random_indices]
+# Use the trained model to make predictions on new images
+predictions = model.predict(new_images)
 
-# Print the images and labels
-for i in range(num_images):
-    image = random_images[i]
-    label = random_labels[i]
-    
-    # Reshape the image into its original 2D shape
-    image = np.reshape(image, (150, 150))
-    
-    # Plot the image
-    plt.imshow(image, cmap="gray")
-    plt.axis("off")
+# Randomly select 5 images from the ChestX-ray14 dataset
+indices = random.sample(range(len(X_train)), 5)
+images = X_train[indices]
+labels = y_train[indices]
+
+# Display the images and their labels
+for image, label in zip(images, labels):
+    plt.imshow(image)
     plt.show()
-    
-    # Print the label
-    print(f"Label: {label}")
+    print("Label: ", label)
